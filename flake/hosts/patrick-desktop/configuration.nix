@@ -9,7 +9,8 @@
   ];
 
   networking.hostName = "patrick-desktop";
-
+  
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   # GRUB for multi-boot — auto-detects Windows and other drives
   boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.grub = {

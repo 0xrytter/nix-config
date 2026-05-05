@@ -7,7 +7,7 @@
 
   programs.git.settings.user = {
     name = "Patrick"; # TODO: set full name
-    email = ""; # TODO: set email
+    email = "devantier.devantier@gmail.com"; # TODO: set email
   };
 
   home.stateVersion = "24.05";
