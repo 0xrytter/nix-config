@@ -38,6 +38,10 @@
       { mode = "n"; key = "<C-k>"; action = "<C-w><C-k>"; options.desc = "Move focus up"; }
     ];
 
+    autoGroups = {
+      "kickstart-highlight-yank" = { clear = true; };
+    };
+
     autoCmd = [
       {
         event = [ "TextYankPost" ];
@@ -253,7 +257,6 @@
       vim-dadbod-ui
       vim-dadbod-completion
       omnisharp-extended-lsp-nvim
-      supermaven-nvim
       nvim-ts-autotag
       nvim-web-devicons
     ];
@@ -390,9 +393,6 @@
       vim.keymap.set('o',               'r', function() require('flash').remote() end,             { desc = 'Remote Flash' })
       vim.keymap.set({ 'o', 'x' },      'R', function() require('flash').treesitter_search() end, { desc = 'Treesitter Search' })
       vim.keymap.set('c',           '<c-s>', function() require('flash').toggle() end,             { desc = 'Toggle Flash Search' })
-
-      -- supermaven
-      require('supermaven-nvim').setup {}
 
       -- mini statusline section override
       require('mini.statusline').section_location = function() return '%2l:%-2v' end
