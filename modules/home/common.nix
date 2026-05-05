@@ -90,11 +90,6 @@
   programs.alacritty.enable = true;
   xdg.configFile."alacritty/alacritty.toml".source = ../../config/alacritty.toml;
 
-  xdg.configFile."nvim" = {
-    source = ../../config/nvim;
-    recursive = true;
-  };
-
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 
@@ -106,6 +101,9 @@
     gh
     lazygit
     lazydocker
-    neovim
+    # formatters for neovim/conform
+    stylua
+    prettierd
+    csharpier
   ];
 }

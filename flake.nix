@@ -8,9 +8,13 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim }:
   let
     system = "x86_64-linux";
     pkgs-unstable = import nixpkgs-unstable {
@@ -21,6 +25,7 @@
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
+      home-manager.sharedModules = [ nixvim.homeManagerModules.nixvim ];
       home-manager.users = users;
     };
   in

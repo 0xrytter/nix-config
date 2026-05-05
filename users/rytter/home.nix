@@ -2,6 +2,7 @@
   imports = [
     ../../modules/home/common.nix
     ../../modules/home/hyprland.nix
+    ../../modules/home/neovim.nix
   ];
 
   programs.git = {
