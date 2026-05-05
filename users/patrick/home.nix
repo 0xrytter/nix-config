@@ -10,5 +10,13 @@
     userEmail = ""; # TODO: set email
   };
 
+  services.easyeffects = {
+    enable = true;
+  };
+
+  home.packages = with pkgs; [
+    easyeffects
+  ];
+
   home.stateVersion = "24.05";
 }
