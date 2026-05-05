@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/base.nix
@@ -11,7 +11,7 @@
   networking.hostName = "patrick-desktop";
 
   # GRUB for multi-boot — auto-detects Windows and other drives
-  boot.loader.systemd-boot.enable = false;
+  boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.grub = {
     enable = true;
     device = "nodev";
