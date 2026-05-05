@@ -1,0 +1,319 @@
+"" Base Settings
+"" ========================================================
+sethandler <C-i> n-v-i:vim
+sethandler <C-o> n-v-i:vim
+sethandler <C-d> n-v-i:vim
+sethandler <C-u> n-v-i:vim
+sethandler <C-h> n-v-i:vim
+sethandler <C-j> n-v-i:vim
+sethandler <C-k> n-v-i:vim
+sethandler <C-l> n-v-i:vim
+sethandler <c-h> a:vim
+sethandler <c-l> a:vim
+sethandler <c-j> a:vim
+sethandler <c-k> a:vim
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nmap <C-u> <C-u>zz
+nmap <C-d> <C-d>zz
+nnoremap <A-n> :tabnext<CR>
+nnoremap <A-p> :tabprev<CR>
+nnoremap <A-h> <C-w>h
+nnoremap <A-l> <C-w>l
+nnoremap <A-k> <C-w>k
+nnoremap <A-j> <C-w>j
+nnoremap [[ <Action>(MethodUp)
+nnoremap ]] <Action>(MethodDown)
+vnoremap < <gv
+vnoremap > >gv
+nnoremap qj @q
+inoremap <C-j> <Action>(PopupMenu-selectNext)
+inoremap <C-k> <Action>(PopupMenu-selectPrev)
+nnoremap <leader>cd :action GotoDeclaration<cr>
+nnoremap <leader>ct :action GotoTypeDeclaration<cr>
+nnoremap <leader>ci :action GotoImplementation<cr>
+nnoremap <leader>cs :action GotoSuperMethod<cr>
+nnoremap <leader>cr :action ShowUsages<cr>
+nnoremap <leader>cu :action HighlightUsagesInFile<cr>
+nnoremap <leader>cv :action QuickJavaDoc<cr>
+nnoremap <leader>cc :action CallHierarchy<CR>  
+nnoremap <leader>cn :action ShowNavBar<CR>
+nnoremap <leader>cx :action FileStructurePopup<CR> 
+nnoremap <leader>cb :action CompileDirty<CR> 
+nnoremap <leader>cm :action ExternalSystem.ProjectRefreshAction<CR> 
+nnoremap <leader>cp :action ParameterInfo<CR> 
+nnoremap <leader>sa :action Generate<CR>
+nnoremap <leader>sc :action GenerateConstructor<cr>
+nnoremap <leader>sg :action GenerateGetterAndSetter<cr>
+nnoremap <leader>se :action GenerateEquals<cr>
+nnoremap <leader>so :action OverrideMethods<cr>
+nnoremap <leader>sn :action NewClass<cr>
+nnoremap <leader>sf :action NewFile<cr>
+nnoremap zc :action CollapseAllRegions<cr>
+nnoremap ze :action ExpandAllRegions<cr>
+nnoremap zt :action ExpandCollapseToggleAction<cr>
+
+"" Other Settings
+"" ========================================================
+set scrolloff=10
+set relativenumber
+set number
+set showmode
+set showcmd
+set smartcase
+set incsearch
+set hlsearch
+set visualbell
+set clipboard=unnamedplus 
+set commentary "
+set surround
+set highlightedyank
+set sneak
+set nerdtree
+set argtextobj
+set multicursor
+set ideajoin
+set ideamarks
+set quickscope
+set easymotion
+set notimeout
+let mapleader = " "
+set which-key
+let g:WhichKey_FontSize = 20 
+let g:WhichKey_CommandColor = "#89b4fa"
+let g:WhichKey_PrefixColor = "#a6e3a1"
+let g:WhichKey_SortOrder = "by_key_prefix_first"
+autocmd FileType nerdtree map <buffer> r <Action>(RenameElement)
+
+"" Which-key Descriptions
+"" ========================================================
+let g:WhichKeyDesc_leader = "<leader> Leader key"
+let g:WhichKeyDesc_easymotion_prefix = "<leader><leader>"
+let g:WhichKeyDesc_file_quickLook = "<leader><leader> Recent files"
+let g:WhichKeyDesc_easymotion = "<leader>j Jump with Easymotion"
+let g:WhichKeyDesc_fold = "<leader>z Folding"
+let g:WhichKeyDesc_fold_all = "<leader>zc Fold all regions"
+let g:WhichKeyDesc_unfold_all = "<leader>zo Unfold all regions"
+let g:WhichKeyDesc_window = "<leader>w Window splits"
+let g:WhichKeyDesc_window_split_vertically = "<leader>wv Split vertically"
+let g:WhichKeyDesc_window_split_vertically = "<leader>wv Split vertically"
+let g:WhichKeyDesc_window_split_horizontally = "<leader>wh Split horizontally"
+let g:WhichKeyDesc_window_split_unsplit = "<leader>wu Unsplit"
+let g:WhichKeyDesc_window_split_move_editor = "<leader>wm Move editor to opposite tab group"
+let g:WhichKeyDesc_leader_debug = "<leader>d Debug actions"
+let g:WhichKeyDesc_debug_debug = "<leader>de Debug"
+let g:WhichKeyDesc_debug_choosedebug = "<leader>dE Choose debug"
+let g:WhichKeyDesc_debug_run = "<leader>dr Run"
+let g:WhichKeyDesc_debug_chooserun = "<leader>dR Choose run"
+let g:WhichKeyDesc_debug_stop = "<leader>dk Stop (Kill)"
+let g:WhichKeyDesc_debug_togglelinebreakpoint = "<leader>db Toggle breakpoint"
+let g:WhichKeyDesc_debug_muteallbreakpoints = "<leader>dm Mute All breakpoints"
+let g:WhichKeyDesc_debug_removeallbreakpoints = "<leader>dd Remove all breakpoints"
+let g:WhichKeyDesc_debug_showbreakpoints = "<leader>ds Show all breakpoints"
+let g:WhichKeyDesc_debug_stepover = "<leader>dv Step oVer"
+let g:WhichKeyDesc_debug_stepinto = "<leader>di Step into"
+let g:WhichKeyDesc_debug_stepout = "<leader>do Step Out"
+let g:WhichKeyDesc_debug_continue = "<leader>dc Continue"
+let g:WhichKeyDesc_debug_quickevaluate = "<leader>dx Evaluate selected expression"
+let g:WhichKeyDesc_debug_evaluate = "<leader>dt EvaluaTe expression"
+let g:WhichKeyDesc_debug_watch = "<leader>dw Add to watch"
+let g:WhichKeyDesc_leader_finder = "<leader>f Finder actions"
+let g:WhichKeyDesc_finder_class = "<leader>fe Find class"
+let g:WhichKeyDesc_finder_file = "<leader>fn Find files (Name)"
+let g:WhichKeyDesc_finder_projects = "<leader>fp Find recent projects"
+let g:WhichKeyDesc_finder_actions = "<leader>fa Find actions"
+let g:WhichKeyDesc_finder_grep = "<leader>fg Find in files (Grep)"
+let g:WhichKeyDesc_finder_history = "<leader>fh Find recent files (History)"
+let g:WhichKeyDesc_finder_location = "<leader>fm Find recent locations (Marks)"
+let g:WhichKeyDesc_finder_symbol = "<leader>fs Find symbol"
+let g:WhichKeyDesc_finder_find = "<leader>fd Find in current file"
+let g:WhichKeyDesc_finder_replace = "<leader>fr Find and replace in current file <Ctrl-r>"
+let g:WhichKeyDesc_finder_replaceinfiles = "<leader>fR Find and replace in files"
+let g:WhichKeyDesc_finder_clipboard = "<leader>fx Find in clipboard"
+let g:WhichKeyDesc_leader_views = "<leader>v View actions"
+let g:WhichKeyDesc_views_project = "<leader>vf Project view (Files)"
+let g:WhichKeyDesc_views_problems = "<leader>vp Problems and diganostics view"
+let g:WhichKeyDesc_views_structure = "<leader>vs Structure view"
+let g:WhichKeyDesc_views_terminal = "<leader>vt Terminal"
+let g:WhichKeyDesc_views_services = "<leader>vv Services view"
+let g:WhichKeyDesc_views_debug = "<leader>vd Debug view"
+let g:WhichKeyDesc_views_git = "<leader>vg Git view"
+let g:WhichKeyDesc_views_todo = "<leader>vo TODO view"
+let g:WhichKeyDesc_views_copilotchat = "<leader>vc Copilot chat"
+let g:WhichKeyDesc_views_close = "<leader>vq Close view"
+let g:WhichKeyDesc_leader_code = "<leader>c Code actions"
+let g:WhichKeyDesc_code_gotodeclaration = "<leader>cd Go to declaration"
+let g:WhichKeyDesc_code_gototypedeclaration = "<leader>ct Go to type declaration"
+let g:WhichKeyDesc_code_gotoimplementation = "<leader>ci Go to implementation"
+let g:WhichKeyDesc_code_gotosupermethod = "<leader>cs Go to super method"
+let g:WhichKeyDesc_code_gotousages = "<leader>cr Show usages (References)"
+let g:WhichKeyDesc_code_highlightusages = "<leader>cu Highlight usages in file"
+let g:WhichKeyDesc_code_doc = "<leader>cv Show docs (hooVer)"
+let g:WhichKeyDesc_code_callhierarchy = "<leader>cc Show call hierarchy"
+let g:WhichKeyDesc_code_navbar = "<leader>cn Show navigation bar"
+let g:WhichKeyDesc_code_filestructure = "<leader>cx Show file structure"
+let g:WhichKeyDesc_code_build = "<leader>cb Build"
+let g:WhichKeyDesc_code_mavenrefresh = "<leader>cm Refresh Maven dependencies"
+let g:WhichKeyDesc_code_parameterinfo = "<leader>cp Parameter info"
+let g:WhichKeyDesc_leader_refactor = "<leader>r Refactoring actions"
+let g:WhichKeyDesc_refactor_showactions = "<leader>re Show actions"
+let g:WhichKeyDesc_refactor_renameelement = "<leader>rn Rename element"
+let g:WhichKeyDesc_refactor_introducevariable = "<leader>rv Introduce variable"
+let g:WhichKeyDesc_refactor_introduceconstant = "<leader>rc Introduce constant"
+let g:WhichKeyDesc_refactor_introducefield = "<leader>rf Introduce field"
+let g:WhichKeyDesc_refactor_introduceparameter = "<leader>rp Introduce parameter"
+let g:WhichKeyDesc_refactor_extractmethod = "<leader>rx Extract method"
+let g:WhichKeyDesc_refactor_formatcode = "<leader>rf Format code"
+let g:WhichKeyDesc_refactor_optimizeimports = "<leader>ro Optmize imports"
+let g:WhichKeyDesc_refactor_inline = "<leader>ri Inline"
+let g:WhichKeyDesc_refactor_changesignature = "<leader>rs Change signature"
+let g:WhichKeyDesc_refactor_anonymoustoinner = "<leader>ra Convert anonymous to inner"
+let g:WhichKeyDesc_refactor_move = "<leader>rm Move"
+let g:WhichKeyDesc_leader_source = "<leader>s Source generation actions"
+let g:WhichKeyDesc_source_actions = "<leader>sa Show source generation actions"
+let g:WhichKeyDesc_source_constructor = "<leader>sc Generate constructor"
+let g:WhichKeyDesc_source_gettersetter = "<leader>sg Generate getters and setters"
+let g:WhichKeyDesc_source_equals = "<leader>se Generate equals and hashCode"
+let g:WhichKeyDesc_source_override = "<leader>so Override methods"
+let g:WhichKeyDesc_source_new_class= "<leader>sn New Class" 
+let g:WhichKeyDesc_source_new_file= "<leader>sf New File" 
+let g:WhichKeyDesc_leader_git = "<leader>g Git actions"
+let g:WhichKeyDesc_leader_diff = "<leader>gd Show differences"
+let g:WhichKeyDesc_leader_nextdiff = "<leader>gn Next difference"
+let g:WhichKeyDesc_leader_previousdiff = "<leader>gp Previous difference"
+let g:WhichKeyDesc_leader_checkinproject= "<leader>gb Open Git branches list"
+let g:WhichKeyDesc_git_branches = "<leader>gb Open Git branches list"
+let g:WhichKeyDesc_errors = "<leader>e Error navigation"
+let g:WhichKeyDesc_error_next = "<leader>en Go to next error"
+let g:WhichKeyDesc_error_previous = "<leader>ep Go to previous error"
+let g:WhichKeyDesc_error_description = "<leader>ed Show error description"
+let g:WhichKeyDesc_leader_display = "<leader>m Display modes"
+let g:WhichKeyDesc_display_distractionfreemode = "<leader>md Toggle distraction free mode"
+let g:WhichKeyDesc_display_zenmode = "<leader>mz Toggle Zen mode"
+let g:WhichKeyDesc_display_fullscreen = "<leader>mf Toggle full screen"
+let g:WhichKeyDesc_leader_folds= "<leader>z Folds"
+let g:WhichKeyDesc_fold_collapseall = "| Collapse all folds"
+let g:WhichKeyDesc_fold_expandall = "-- Expand all folds"
+let g:WhichKeyDesc_fold_toggle = "za Toggle fold under the cursor"
+let g:WhichKeyDesc_action= "<leader>a Actions"
+let g:WhichKeyDesc_action_context_menu = "<leader>am Open context menu"
+let g:WhichKeyDesc_comment = "<leader>ac Comment line"
+let g:WhichKeyDesc_action_search = "<leader>as Open command modal"
+let g:WhichKeyDesc_goto = "g Go to X"
+let g:WhichKeyDesc_goto_back = "<leader>gb Go Back"
+let g:WhichKeyDesc_harpoon = "<leader>h Harpoon"
+let g:WhichKeyDesc_set_harpoon = "<leader>hs Set harpoon" 
+let g:WhichKeyDesc_goto_harpoon = "<leader>hg Goto harpoon" 
+let g:WhichKeyDesc_tools= "<leader>t Tools"
+let g:WhichKeyDesc_code_generation = "<leader>context" 
+
+"" Key Bindings
+"" ========================================================
+map <leader>j <Plug>(easymotion-s)
+map <leader>zc :action CollapseAllRegions<CR>
+map <leader>zo :action ExandAllRegions<CR>
+map <leader>wm <Action>(MoveEditorToOppositeTabGroup)
+map <leader>wv <Action>(SplitVertically)
+map <leader>wh <Action>(SplitHorizontally)
+map <leader>wu <Action>(Unsplit)
+map <leader>wm <Action>(MoveEditorToOppositeTabGroup)
+map <leader>de :action Debug<cr>
+map <leader>dE :action ChooseDebugConfiguration<cr>
+map <leader>dr :action Run<cr>
+map <leader>dR :action ChooseRunConfiguration<cr>
+map <leader>dk :action Stop<cr>
+map <leader>db :action ToggleLineBreakpoint<cr>
+map <leader>dm :action XDebugger.MuteBreakpoints<cr>
+map <leader>dd :action Debugger.RemoveAllBreakpoints<cr>
+map <leader>ds :action ViewBreakpoints<cr>
+map <leader>dv :action StepOver<cr>
+map <leader>di :action StepInto<cr>e
+map <leader>do :action StepOut<cr>
+map <leader>dc :action Resume<cr>
+map <leader>dx :action QuickEvaluateExpression<cr>
+map <leader>dt :action EvaluateExpression<cr>
+map <leader>dw :action Debugger.AddToWatch<cr>
+map <leader>fe :action GotoClass<cr>
+map <leader>fn :action GotoFile<cr>
+map <leader>fp :action ManageRecentProjects<cr>
+map <leader>fa :action GotoAction<cr>
+map <leader>fg :action FindInPath<cr>
+map <leader>fh :action RecentFiles<cr>
+map <leader>fm :action RecentLocations<cr>
+map <leader>fs :action GotoSymbol<cr>
+map <leader>fd :action Find<cr>
+map <leader>fr :action Replace<cr>
+map <leader>fR :action ReplaceInPath<cr>
+map <leader>fx :action PasteMultiple<cr>
+map <leader>vf :action ActivateProjectToolWindow<cr>
+map <leader>vp :action ActivateProblemsViewToolWindow<cr>
+map <leader>vs :action ActivateStructureToolWindow<cr>
+map <leader>vt :action ActivateTerminalToolWindow<cr>
+map <leader>vv :action ActivateServicesToolWindow<cr>
+map <leader>vd :action ActivateDebugToolWindow<cr>
+map <leader>vg :action ActivateVersionControlToolWindow<cr>
+map <leader>vo :action ActivateTODOToolWindow<cr>
+map <leader>vc :action ActivateGitHubCopilotChatToolWindow<cr>
+map <leader>vq :action CloseActiveTab<cr>
+map <leader>re :action Refactorings.QuickListPopupAction<CR>
+map <leader>rn :action RenameElement<cr>
+map <leader>rv :action IntroduceVariable<cr>
+map <leader>rc :action IntroduceConstant<cr>
+map <leader>rf :action IntroduceField<cr>
+map <leader>rp :action IntroduceParameter<cr>
+map <leader>rx :action ExtractMethod<cr>
+map <leader>rf :action ReformatCode<cr>:action RearrangeCode<cr>:action OptimizeImports<cr>
+map <leader>ro :action OptimizeImports<cr>
+map <leader>ri :action Inline<cr>
+map <leader>rs :action ChangeSignature<cr>
+map <leader>ra :action AnonymousToInner<cr>
+map <leader>rm :action Move<cr>
+map <leader>gd :action Compare.LastVersion<cr>
+map <leader>gn :action NextDiff<cr>
+map <leader>gp :action PreviousDiff<cr>
+map <leader>gc <Action>(CheckinProject)
+map <leader>gb <Action>(Git.Branches)
+map <leader>en :action GotoNextError<cr>
+map <leader>ep :action GotoPreviousError<cr>
+map <leader>ed :action ShowErrorDescription<cr>
+map <leader>md :action ToggleDistractionFreeMode<cr>
+map <leader>mz :action ToggleZenMode<cr>
+map <leader>mf :action ToggleFullScreen<cr>
+map <leader>am <action>(ShowIntentionActions)
+map <leader>ac <action>(CommentByLineComment)
+map <leader>ar <action>(Run)
+map <leader>ad <action>(Debug)
+map <leader>as <action>(Stop)
+map <leader>at <action>(RunAllTest)
+map <leader>ao <action>(RiderOpenSolution)
+map <leader>an <action>(RiderNuGetToggleToolWindowAction)
+map <leader>aq <action>(Console.Jdbc.Execute)
+map gd <Action>(GotoDeclaration)
+map gy <Action>(GotoTypeDeclaration)
+map gi <Action>(GotoImplementation)
+map gu <Action>(ShowUsages)
+map gt <Action>(GotoTest)
+map gb <Action>(Back)
+map gf <Action>(Forward)
+map gn :action GotoHarpoon1
+map ge :action GotoHarpoon2
+map gi :action GotoHarpoon3
+map go :action GotoHarpoon4
+map <leader>hn :action SetHarpoon1<cr>
+map <leader>he :action SetHarpoon2<cr>
+map <leader>hi :action SetHarpoon3<cr>
+map <leader>ho :action SetHarpoon4<cr>
+map <leader>hh :action ShowHarpoon<cr>
+map <leader>ha :action AddToHarpoon<cr>
+map <leader>tt :!alacritty &<CR>
+map <leader>tf :action ActivateProjectToolWindow<CR>
+map <leader>td :action ActivateDatabaseToolWindow<CR>
+map <leader>th :action HideAllWindows<CR>
+map <leader>ts :action ShowSettings<CR>
+map <leader>te :action ActivateProblemsViewToolWindow<CR>
+map <leader>qr :action IdeaVim.ReloadVimRc.reload<CR>
+map <leader>qo :e ~/.ideavimrc<CR>
+map <leader>ya <Action>(ShowIntentionActions)
+map <leader>yh <action>(ShowHoverInfo)
