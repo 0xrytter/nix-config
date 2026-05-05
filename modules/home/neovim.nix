@@ -352,7 +352,7 @@
       })
 
       -- conform format keymap
-      vim.keymap.set('', '<leader>f', function()
+      vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
         require('conform').format { async = true, lsp_format = 'fallback' }
       end, { desc = '[F]ormat buffer' })
 
