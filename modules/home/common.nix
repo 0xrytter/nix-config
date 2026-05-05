@@ -93,6 +93,8 @@
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 
+  services.easyeffects.enable = true;
+
   home.file.".ideavimrc".source = ../../config/ideavimrc;
 
   home.file.".claude/hooks" = {
@@ -108,6 +110,7 @@
     gh
     lazygit
     lazydocker
+    easyeffects
     # formatters for neovim/conform
     stylua
     prettierd
