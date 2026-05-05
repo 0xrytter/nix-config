@@ -3,7 +3,7 @@ set -euo pipefail
 
 HOSTNAME="${1:-$(hostname -s)}"
 HARDWARE_SRC="/etc/nixos/hardware-configuration.nix"
-HARDWARE_DST="$(dirname "$0")/hosts/$HOSTNAME/hardware-configuration.nix"
+HARDWARE_DST="$(dirname "$0")/flake/hosts/$HOSTNAME/hardware-configuration.nix"
 
 if [[ ! -f "$HARDWARE_SRC" ]]; then
     echo "ERROR: $HARDWARE_SRC not found. Run nixos-generate-config first."
@@ -12,7 +12,7 @@ fi
 
 if [[ ! -d "$(dirname "$HARDWARE_DST")" ]]; then
     echo "ERROR: No host config found for '$HOSTNAME'. Available hosts:"
-    ls "$(dirname "$0")/hosts/"
+    ls "$(dirname "$0")/flake/hosts/"
     exit 1
 fi
 

@@ -8,10 +8,10 @@ read -p "Enter hostname (DIY-Desktop/T480/patrick-desktop) or Enter for $(hostna
 HOSTNAME="${input:-$(hostname -s)}"
 
 echo "Updating flake..."
-nix flake update --flake "."
+nix flake update --flake "./flake"
 
 echo "Rebuilding with updated flake..."
-sudo nixos-rebuild switch --flake ".#$HOSTNAME"
+sudo nixos-rebuild switch --flake "./flake#$HOSTNAME"
 
 echo "Cleaning old generations (keeping last 3)..."
 sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations +3
