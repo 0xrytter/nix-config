@@ -1,5 +1,8 @@
 { pkgs, pkgs-unstable, ... }: {
-  imports = [ ../../modules/home/common.nix ];
+  imports = [
+    ../../modules/home/common.nix
+    ../../modules/home/hyprland.nix
+  ];
 
   programs.git = {
     userName = "Patrick"; # TODO: set full name

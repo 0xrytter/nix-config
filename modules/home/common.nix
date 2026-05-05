@@ -5,6 +5,14 @@
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
+      "credential \"https://github.com\"".helper = [
+        ""
+        "!/run/current-system/sw/bin/gh auth git-credential"
+      ];
+      "credential \"https://gist.github.com\"".helper = [
+        ""
+        "!/run/current-system/sw/bin/gh auth git-credential"
+      ];
     };
   };
 
@@ -23,6 +31,70 @@
     '';
   };
 
+  programs.tmux = {
+    enable = true;
+    prefix = "C-Space";
+    baseIndex = 1;
+    mouse = true;
+    keyMode = "vi";
+    terminal = "xterm-256color";
+    plugins = with pkgs.tmuxPlugins; [
+      sensible
+      vim-tmux-navigator
+      yank
+      resurrect
+      {
+        plugin = catppuccin;
+        extraConfig = "set -g @catppuccin_flavour 'mocha'";
+      }
+      {
+        plugin = continuum;
+        extraConfig = ''
+          set -g @continuum-save-interval '5'
+          set -g @continuum-restore 'on'
+        '';
+      }
+    ];
+    extraConfig = ''
+      set-option -sa terminal-overrides ",xterm*:Tc"
+      set-option -g update-environment "SSH_AUTH_SOCK"
+
+      bind h select-pane -L
+      bind j select-pane -D
+      bind k select-pane -U
+      bind l select-pane -R
+
+      set -g pane-base-index 1
+      set-window-option -g pane-base-index 1
+      set-option -g renumber-windows on
+
+      bind -n M-Left select-pane -L
+      bind -n M-Right select-pane -R
+      bind -n M-Up select-pane -U
+      bind -n M-Down select-pane -D
+
+      bind -n S-Left previous-window
+      bind -n S-Right next-window
+      bind -n M-H previous-window
+      bind -n M-L next-window
+
+      bind-key -T copy-mode-vi v send-keys -X begin-selection
+      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+      bind '"' split-window -v -c "#{pane_current_path}"
+      bind % split-window -h -c "#{pane_current_path}"
+    '';
+  };
+
+  programs.alacritty.enable = true;
+  xdg.configFile."alacritty/alacritty.toml".source = ../../config/alacritty.toml;
+
+  xdg.configFile."nvim" = {
+    source = ../../config/nvim;
+    recursive = true;
+  };
+
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 
@@ -34,7 +106,6 @@
     gh
     lazygit
     lazydocker
-    tmux
     neovim
   ];
 }
