@@ -1,0 +1,25 @@
+{
+  "availableModels": [
+    "claude-sonnet-4-6",
+    "claude-opus-4-7",
+    "claude-haiku-4-5"
+  ],
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/hooks/session-stop.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 $HOME/.claude/hooks/statusline.py"
+  },
+  "model": "sonnet"
+}

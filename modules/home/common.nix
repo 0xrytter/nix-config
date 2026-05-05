@@ -95,6 +95,13 @@
 
   home.file.".ideavimrc".source = ../../config/ideavimrc;
 
+  home.file.".claude/hooks" = {
+    source = ../../config/claude-hooks;
+    recursive = true;
+  };
+  home.file.".claude/settings.json".source = ../../config/claude-settings.json;
+  home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
+
   home.packages = with pkgs; [
     fd
     ripgrep
