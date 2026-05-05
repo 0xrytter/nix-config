@@ -5,9 +5,9 @@
     ../../modules/home/neovim.nix
   ];
 
-  programs.git = {
-    userName = "Patrick"; # TODO: set full name
-    userEmail = ""; # TODO: set email
+  programs.git.settings.user = {
+    name = "Patrick"; # TODO: set full name
+    email = ""; # TODO: set email
   };
 
   services.easyeffects = {

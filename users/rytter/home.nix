@@ -5,9 +5,9 @@
     ../../modules/home/neovim.nix
   ];
 
-  programs.git = {
-    userName = "rytter";
-    userEmail = "rytter.jakob@gmail.com";
+  programs.git.settings.user = {
+    name = "rytter";
+    email = "rytter.jakob@gmail.com";
   };
 
   # Override keyboard layout from hyprland module default (dk)

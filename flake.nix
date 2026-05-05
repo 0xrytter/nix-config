@@ -25,7 +25,7 @@
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
-      home-manager.sharedModules = [ nixvim.homeManagerModules.nixvim ];
+      home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
       home-manager.users = users;
     };
   in

@@ -1,7 +1,7 @@
 { pkgs, pkgs-unstable, ... }: {
   programs.git = {
     enable = true;
-    extraConfig = {
+    settings = {
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;

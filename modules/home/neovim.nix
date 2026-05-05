@@ -97,13 +97,13 @@
         servers = {
           svelte.enable = true;
           elixirls.enable = true;
-          ts-ls.enable = true;
+          ts_ls.enable = true;
           eslint.enable = true;
           bashls.enable = true;
           html.enable = true;
           pyright.enable = true;
           dockerls.enable = true;
-          docker-compose-language-service.enable = true;
+          docker_compose_language_service.enable = true;
           tailwindcss.enable = true;
           omnisharp = {
             enable = true;
@@ -117,7 +117,7 @@
               };
             };
           };
-          lua-ls = {
+          lua_ls = {
             enable = true;
             settings.Lua.completion.callSnippet = "Replace";
           };
@@ -236,6 +236,8 @@
       };
 
       diffview.enable = true;
+
+      web-devicons.enable = true;
 
       flash = {
         enable = true;

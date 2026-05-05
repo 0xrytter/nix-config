@@ -4,6 +4,9 @@ set -euo pipefail
 # Cache sudo credentials upfront — one prompt for the whole script
 sudo -v
 
+# Allow root to read this repo (required for nixos-rebuild to access the flake)
+sudo git config --global --add safe.directory "$(pwd)"
+
 read -p "Enter hostname (DIY-Desktop/T480/patrick-desktop) or Enter for $(hostname -s): " input
 HOSTNAME="${input:-$(hostname -s)}"
 FLAKE_PATH="."
