@@ -12,19 +12,23 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim, llm-agents }:
   let
     system = "x86_64-linux";
     pkgs-unstable = import nixpkgs-unstable {
       inherit system;
       config.allowUnfree = true;
     };
+    agents = llm-agents.packages.${system};
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
+      home-manager.extraSpecialArgs = { inherit pkgs-unstable agents; };
       home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
       home-manager.users = users;
     };
@@ -33,7 +37,7 @@
     nixosConfigurations = {
       DIY-Desktop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable; };
+        specialArgs = { inherit pkgs-unstable agents; };
         modules = [
           ./hosts/DIY-Desktop/configuration.nix
           home-manager.nixosModules.home-manager
@@ -43,7 +47,7 @@
 
       T480 = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable; };
+        specialArgs = { inherit pkgs-unstable agents; };
         modules = [
           ./hosts/T480/configuration.nix
           home-manager.nixosModules.home-manager
@@ -53,7 +57,7 @@
 
       patrick-desktop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable; };
+        specialArgs = { inherit pkgs-unstable agents; };
         modules = [
           ./hosts/patrick-desktop/configuration.nix
           home-manager.nixosModules.home-manager

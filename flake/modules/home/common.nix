@@ -1,4 +1,4 @@
-{ pkgs, pkgs-unstable, ... }: {
+{ pkgs, pkgs-unstable, agents, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -112,7 +112,8 @@
     lazydocker
     easyeffects
     # AI coding agents
-    pkgs-unstable.opencode
+    agents.opencode
+    agents.pi-coding-agent
     # formatters for neovim/conform
     stylua
     prettierd
