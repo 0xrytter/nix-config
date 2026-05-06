@@ -1,13 +1,17 @@
-{ lib, buildNpmPackage, fetchurl }:
+{ lib, buildNpmPackage, fetchFromGitHub }:
 
 buildNpmPackage rec {
   pname = "pi-coding-agent";
   version = "0.73.0";
 
-  src = fetchurl {
-    url = "https://registry.npmjs.org/@mariozechner/pi-coding-agent/-/pi-coding-agent-${version}.tgz";
-    hash = "sha256-9hTRUh87tkSOQdKW1q9OcUC+ekxa844O65yuabsSdLs=";
+  src = fetchFromGitHub {
+    owner = "badlogic";
+    repo = "pi-mono";
+    rev = "v${version}";
+    hash = "sha256-oE4zMH5KEH185Vdp0CE221sa9rJJw35jFLlfhTa3Sg4=";
   };
+
+  sourceRoot = "${src.name}/packages/coding-agent";
 
   npmDepsHash = lib.fakeHash;
 
