@@ -1,4 +1,4 @@
-{ lib, buildNpmPackage, fetchFromGitHub, nodejs, makeWrapper }:
+{ lib, buildNpmPackage, fetchFromGitHub, nodejs, makeWrapper, pkg-config, pixman, cairo, pango, libjpeg, giflib, librsvg }:
 
 buildNpmPackage rec {
   pname = "pi-coding-agent";
@@ -25,7 +25,8 @@ buildNpmPackage rec {
       --add-flags "$out/lib/pi/dist/cli.js"
   '';
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper pkg-config ];
+  buildInputs = [ pixman cairo pango libjpeg giflib librsvg ];
 
   meta = {
     description = "Minimal extensible terminal coding agent";
