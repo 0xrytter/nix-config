@@ -1,4 +1,4 @@
-{ lib, buildNpmPackage, fetchFromGitHub }:
+{ lib, buildNpmPackage, fetchFromGitHub, nodejs, makeWrapper }:
 
 buildNpmPackage rec {
   pname = "pi-coding-agent";
@@ -11,9 +11,21 @@ buildNpmPackage rec {
     hash = "sha256-oE4zMH5KEH185Vdp0CE221sa9rJJw35jFLlfhTa3Sg4=";
   };
 
-  sourceRoot = "${src.name}/packages/coding-agent";
-
   npmDepsHash = lib.fakeHash;
+
+  buildPhase = ''
+    npm run build --workspace=packages/coding-agent
+  '';
+
+  installPhase = ''
+    mkdir -p $out/bin $out/lib/pi
+    cp -r packages/coding-agent/dist $out/lib/pi/
+    cp -r packages/coding-agent/package.json $out/lib/pi/
+    makeWrapper ${nodejs}/bin/node $out/bin/pi \
+      --add-flags "$out/lib/pi/dist/cli.js"
+  '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   meta = {
     description = "Minimal extensible terminal coding agent";
