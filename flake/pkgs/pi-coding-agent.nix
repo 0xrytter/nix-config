@@ -11,7 +11,7 @@ buildNpmPackage rec {
     hash = "sha256-oE4zMH5KEH185Vdp0CE221sa9rJJw35jFLlfhTa3Sg4=";
   };
 
-  npmDepsHash = lib.fakeHash;
+  npmDepsHash = "sha256-rBlAzAnP9aif1tZ984AO4HftIJsDgLQ+02J3td4jcRg=";
 
   buildPhase = ''
     npm run build --workspace=packages/coding-agent
