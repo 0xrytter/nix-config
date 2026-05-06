@@ -25,10 +25,10 @@ update_pkg() {
 
     local tarball_url="https://registry.npmjs.org/$npm_name/-/$(basename "$npm_name")-${latest}.tgz"
     local new_hash
-    new_hash=$(nix-prefetch-url "$tarball_url" 2>/dev/null)
+    new_hash=$(nix-prefetch-url --type sha256 "$tarball_url" 2>/dev/null | xargs -I{} nix hash convert --type sha256 --to sri {})
 
     sed -i "s/version = \"$current\"/version = \"$latest\"/" "$file"
-    sed -i "s|hash = \"sha256-.*\"|hash = \"sha256-${new_hash}=\"|" "$file"
+    sed -i "s|hash = \"sha256-.*\"|hash = \"${new_hash}\"|" "$file"
     # Reset npmDepsHash so rebuild will report the correct one
     sed -i 's/npmDepsHash = ".*"/npmDepsHash = lib.fakeHash/' "$file"
 

@@ -6,7 +6,7 @@ buildNpmPackage rec {
 
   src = fetchurl {
     url = "https://registry.npmjs.org/@mariozechner/pi-coding-agent/-/pi-coding-agent-${version}.tgz";
-    hash = "sha256-1fvl2axnkblwxc78xwss9ixbwh3i9spxd5nj86749div3x9d257n=";
+    hash = "sha256-9hTRUh87tkSOQdKW1q9OcUC+ekxa844O65yuabsSdLs=";
   };
 
   npmDepsHash = lib.fakeHash;
