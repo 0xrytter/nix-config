@@ -113,7 +113,7 @@
     easyeffects
     # AI coding agents
     agents.opencode
-    agents.pi-coding-agent
+    agents.pi
     # formatters for neovim/conform
     stylua
     prettierd
