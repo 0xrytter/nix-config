@@ -17,9 +17,13 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim }:
   let
     system = "x86_64-linux";
+    overlay = final: prev: {
+      pi-coding-agent = final.callPackage ./pkgs/pi-coding-agent.nix {};
+    };
     pkgs-unstable = import nixpkgs-unstable {
       inherit system;
       config.allowUnfree = true;
+      overlays = [ overlay ];
     };
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;

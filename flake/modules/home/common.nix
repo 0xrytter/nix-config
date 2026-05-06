@@ -111,6 +111,9 @@
     lazygit
     lazydocker
     easyeffects
+    # AI coding agents
+    pkgs-unstable.opencode
+    pkgs-unstable.pi-coding-agent
     # formatters for neovim/conform
     stylua
     prettierd
