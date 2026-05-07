@@ -71,6 +71,8 @@
 
       set -g status-left-length 100
       set -g status-right-length 100
+      set -g status-left " #S "
+      set -g status-right " #{b:pane_current_path} | %H:%M "
 
       bind h select-pane -L
       bind j select-pane -D
