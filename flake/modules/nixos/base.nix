@@ -2,6 +2,7 @@
   nixpkgs.overlays = [
     (final: prev: {
       openldap = prev.openldap.overrideAttrs { doCheck = false; };
+      gtksourceview5 = prev.gtksourceview5.overrideAttrs { doCheck = false; };
     })
   ];
 
