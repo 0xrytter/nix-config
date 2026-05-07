@@ -54,7 +54,7 @@
     beekeeper-studio
     vlc
     discord
-    obsidian keepassxc chromium
+    obsidian keepassxc
     popsicle
   ];
 }

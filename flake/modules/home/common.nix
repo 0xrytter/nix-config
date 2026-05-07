@@ -135,6 +135,16 @@
 
   gtk.gtk4.theme = null;
 
+  programs.chromium = {
+    enable = true;
+    extensions = [
+      { id = "ddkjiahejlhfcafbddmgiahcphecmpfh"; } # uBlock Origin Lite
+      { id = "dbepggeogbaibhgnhhndojpepiihcmeb"; } # Vimium
+      { id = "eimadpbcbfnmbkopoojfekhnkhdbieeh"; } # Dark Reader
+      { id = "nngceckbapebfimnlniiiahkandclblb"; } # Bitwarden
+    ];
+  };
+
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 

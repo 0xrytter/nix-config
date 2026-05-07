@@ -97,16 +97,6 @@
     sensitivity = 200;
   };
 
-  environment.systemPackages = with pkgs; [
-    teams-for-linux
-    google-chrome
-    gearlever
-    libva mesa libglvnd libdrm wayland libinput
-    libx11 libxext libxrender libxrandr
-    libxfixes libxau libxdmcp
-    libva-utils curl nss nspr zlib alsa-lib
-    gnome2.GConf gcc.cc.lib libuv
-  ];
 
   system.stateVersion = "24.11";
 }
