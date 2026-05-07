@@ -142,6 +142,9 @@
       { id = "dbepggeogbaibhgnhhndojpepiihcmeb"; } # Vimium
       { id = "eimadpbcbfnmbkopoojfekhnkhdbieeh"; } # Dark Reader
       { id = "nngceckbapebfimnlniiiahkandclblb"; } # Bitwarden
+      { id = "mnjggcdmjocbbbhaepdhchncahnbgone"; } # SponsorBlock
+      { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return YouTube Dislike
+      { id = "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"; } # Privacy Badger
     ];
   };
 
