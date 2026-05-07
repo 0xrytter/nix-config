@@ -102,8 +102,8 @@
     google-chrome
     gearlever
     libva mesa libglvnd libdrm wayland libinput
-    xorg.libX11 xorg.libXext xorg.libXrender xorg.libXrandr
-    xorg.libXfixes xorg.libXau xorg.libXdmcp
+    libx11 libxext libxrender libxrandr
+    libxfixes libxau libxdmcp
     libva-utils curl nss nspr zlib alsa-lib
     gnome2.GConf gcc.cc.lib libuv
   ];

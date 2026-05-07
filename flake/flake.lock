@@ -367,7 +367,8 @@
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
-        "stylix": "stylix"
+        "stylix": "stylix",
+        "tmux-gruvbox": "tmux-gruvbox"
       }
     },
     "stylix": {
@@ -509,6 +510,22 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "tmux-gruvbox": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1748517068,
+        "narHash": "sha256-TuWPw6sk61k7GnHwN2zH6x6mGurTHiA9f0E6NJfMa6g=",
+        "owner": "egel",
+        "repo": "tmux-gruvbox",
+        "rev": "aeb30c7172a8ed8663409207814cf47d9df10d15",
+        "type": "github"
+      },
+      "original": {
+        "owner": "egel",
+        "repo": "tmux-gruvbox",
         "type": "github"
       }
     },

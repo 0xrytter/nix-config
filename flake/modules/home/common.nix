@@ -130,7 +130,10 @@
 
   stylix.targets = {
     neovim.enable = false;
+    qt.enable = false;
   };
+
+  gtk.gtk4.theme = null;
 
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
