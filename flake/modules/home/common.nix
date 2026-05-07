@@ -1,4 +1,4 @@
-{ pkgs, pkgs-unstable, agents, ... }: {
+{ pkgs, agents, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -162,7 +162,7 @@
     # AI coding agents
     agents.opencode
     agents.pi
-    pkgs-unstable.t3code
+    t3code
     # formatters for neovim/conform
     stylua
     prettierd

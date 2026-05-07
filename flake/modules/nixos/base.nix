@@ -1,10 +1,4 @@
-{ pkgs, pkgs-unstable, ... }: {
-  nixpkgs.overlays = [
-    (final: prev: {
-      claude-code = pkgs-unstable.claude-code;
-    })
-  ];
-
+{ pkgs, ... }: {
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.permittedInsecurePackages = [ "beekeeper-studio-5.3.4" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -36,7 +30,7 @@
     codex
     claude-code
     bitwarden-desktop
-    pkgs-unstable.bitwarden-cli
+    bitwarden-cli
     git gh
     gcc13 gnumake clang unzip ripgrep coreutils wget
     vimPlugins.telescope-live-grep-args-nvim

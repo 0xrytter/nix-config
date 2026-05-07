@@ -1,4 +1,4 @@
-{ config, pkgs, lib, pkgs-unstable, ... }: {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/base.nix

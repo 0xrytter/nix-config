@@ -2,37 +2,32 @@
   description = "NixOS + home-manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixvim = {
       url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
     };
     stylix = {
       url = "github:danth/stylix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim, llm-agents, stylix }:
+  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix }:
   let
     system = "x86_64-linux";
-    pkgs-unstable = import nixpkgs-unstable {
-      inherit system;
-      config.allowUnfree = true;
-    };
     agents = llm-agents.packages.${system};
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      home-manager.extraSpecialArgs = { inherit pkgs-unstable agents; };
+      home-manager.extraSpecialArgs = { inherit agents; };
       home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
       home-manager.users = users;
     };
@@ -41,7 +36,7 @@
     nixosConfigurations = {
       DIY-Desktop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable agents; };
+        specialArgs = { inherit agents; };
         modules = [
           ./hosts/DIY-Desktop/configuration.nix
           home-manager.nixosModules.home-manager
@@ -52,7 +47,7 @@
 
       T480 = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable agents; };
+        specialArgs = { inherit agents; };
         modules = [
           ./hosts/T480/configuration.nix
           home-manager.nixosModules.home-manager
@@ -63,7 +58,7 @@
 
       patrick-desktop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit pkgs-unstable agents; };
+        specialArgs = { inherit agents; };
         modules = [
           ./hosts/patrick-desktop/configuration.nix
           home-manager.nixosModules.home-manager
