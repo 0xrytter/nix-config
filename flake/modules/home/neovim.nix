@@ -222,6 +222,15 @@
 
       git-conflict.enable = true;
 
+      neotest = {
+        enable = true;
+        adapters = {
+          elixir.enable = true;
+          python.enable = true;
+          jest.enable = true;
+        };
+      };
+
       trouble = {
         enable = true;
         settings.modes.diagnostics.auto_open = false;
@@ -373,6 +382,13 @@
       vim.keymap.set('n', '<C-2>',     function() harpoon:list():select(2) end)
       vim.keymap.set('n', '<C-3>',     function() harpoon:list():select(3) end)
       vim.keymap.set('n', '<C-4>',     function() harpoon:list():select(4) end)
+
+      -- neotest
+      vim.keymap.set('n', '<leader>tt', function() require('neotest').run.run() end,                   { desc = '[T]est nearest' })
+      vim.keymap.set('n', '<leader>tf', function() require('neotest').run.run(vim.fn.expand('%')) end,  { desc = '[T]est file' })
+      vim.keymap.set('n', '<leader>ts', function() require('neotest').summary.toggle() end,            { desc = '[T]est summary' })
+      vim.keymap.set('n', '<leader>to', function() require('neotest').output_panel.toggle() end,       { desc = '[T]est output' })
+      vim.keymap.set('n', '<leader>tS', function() require('neotest').run.stop() end,                  { desc = '[T]est stop' })
 
       -- trouble
       vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>',              { desc = 'Trouble diagnostics' })
