@@ -104,18 +104,6 @@
           dockerls.enable = true;
           docker_compose_language_service.enable = true;
           tailwindcss.enable = true;
-          omnisharp = {
-            enable = true;
-            extraOptions = {
-              handlers."textDocument/definition".__raw = "require('omnisharp_extended').handler";
-              settings = {
-                enableRoslynAnalyzers = true;
-                enableEditorConfigSupport = true;
-                enableImportCompletion = true;
-                analyzeOpenDocumentsOnly = false;
-              };
-            };
-          };
           lua_ls = {
             enable = true;
             settings.Lua.completion.callSnippet = "Replace";
@@ -232,6 +220,18 @@
 
       diffview.enable = true;
 
+      git-conflict.enable = true;
+
+      trouble = {
+        enable = true;
+        settings.modes.diagnostics.auto_open = false;
+      };
+
+      harpoon = {
+        enable = true;
+        enableTelescope = true;
+      };
+
       web-devicons.enable = true;
 
       flash = {
@@ -253,7 +253,6 @@
       vim-dadbod
       vim-dadbod-ui
       vim-dadbod-completion
-      omnisharp-extended-lsp-nvim
       nvim-ts-autotag
       nvim-web-devicons
     ];
@@ -383,6 +382,22 @@
 
       -- oil keymap
       vim.keymap.set('n', '<leader>o', '<cmd>Oil<cr>', { desc = 'Open oil file explorer' })
+
+      -- harpoon
+      local harpoon = require('harpoon')
+      harpoon:setup()
+      vim.keymap.set('n', '<leader>a', function() harpoon:list():add() end,                       { desc = 'Harpoon add file' })
+      vim.keymap.set('n', '<C-e>',     function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = 'Harpoon menu' })
+      vim.keymap.set('n', '<C-1>',     function() harpoon:list():select(1) end)
+      vim.keymap.set('n', '<C-2>',     function() harpoon:list():select(2) end)
+      vim.keymap.set('n', '<C-3>',     function() harpoon:list():select(3) end)
+      vim.keymap.set('n', '<C-4>',     function() harpoon:list():select(4) end)
+
+      -- trouble
+      vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>',              { desc = 'Trouble diagnostics' })
+      vim.keymap.set('n', '<leader>xb', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', { desc = 'Trouble buffer diagnostics' })
+      vim.keymap.set('n', '<leader>xl', '<cmd>Trouble loclist toggle<cr>',                  { desc = 'Trouble location list' })
+      vim.keymap.set('n', '<leader>xq', '<cmd>Trouble qflist toggle<cr>',                   { desc = 'Trouble quickfix' })
 
       -- flash keymaps
       vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end,              { desc = 'Flash' })
