@@ -250,9 +250,6 @@
       vim-sleuth
       lazydev-nvim
       luvit-meta
-      vim-dadbod
-      vim-dadbod-ui
-      vim-dadbod-completion
       nvim-ts-autotag
       nvim-web-devicons
     ];
@@ -363,22 +360,6 @@
         },
         aliases = { heex = 'html', elixir = 'html' },
       }
-
-      -- dadbod cmp source for SQL files
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = { 'sql', 'mysql', 'plsql' },
-        callback = function()
-          require('cmp').setup.buffer {
-            sources = {
-              { name = 'vim-dadbod-completion' },
-              { name = 'buffer' },
-              { name = 'nvim_lsp' },
-              { name = 'luasnip' },
-              { name = 'path' },
-            },
-          }
-        end,
-      })
 
       -- oil keymap
       vim.keymap.set('n', '<leader>o', '<cmd>Oil<cr>', { desc = 'Open oil file explorer' })
