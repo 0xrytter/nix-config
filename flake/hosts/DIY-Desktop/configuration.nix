@@ -5,6 +5,7 @@
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/hyprland.nix
     ../../modules/nixos/nvidia.nix
+    ../../modules/nixos/stylix.nix
     ../../users/rytter/nixos.nix
   ];
 

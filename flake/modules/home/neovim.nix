@@ -51,9 +51,9 @@
       }
     ];
 
-    colorschemes.tokyonight = {
+    colorschemes.catppuccin = {
       enable = true;
-      settings.style = "night";
+      settings.flavour = "mocha";
     };
 
     plugins = {

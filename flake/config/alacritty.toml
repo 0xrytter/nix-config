@@ -6,40 +6,40 @@ duration = 0
 draw_bold_text_with_bright_colors = true
 
 [[colors.indexed_colors]]
-color = "0xF8BD96"
+color = "0xfab387"
 index = 16
 
 [[colors.indexed_colors]]
-color = "0xF5E0DC"
+color = "0xf5e0dc"
 index = 17
 
 [colors.bright]
-black = "0x988BA2"
-blue = "0x96CDFB"
-cyan = "0x89DCEB"
-green = "0xABE9B3"
-magenta = "0xF5C2E7"
-red = "0xF28FAD"
-white = "0xD9E0EE"
-yellow = "0xFAE3B0"
+black = "0x585b70"
+blue = "0x89b4fa"
+cyan = "0x94e2d5"
+green = "0xa6e3a1"
+magenta = "0xf5c2e7"
+red = "0xf38ba8"
+white = "0xa6adc8"
+yellow = "0xf9e2af"
 
 [colors.cursor]
-cursor = "0xF5E0DC"
-text = "0x1E1D2F"
+cursor = "0xf5e0dc"
+text = "0x1e1e2e"
 
 [colors.normal]
-black = "0x6E6C7E"
-blue = "0x96CDFB"
-cyan = "0x89DCEB"
-green = "0xABE9B3"
-magenta = "0xF5C2E7"
-red = "0xF28FAD"
-white = "0xD9E0EE"
-yellow = "0xFAE3B0"
+black = "0x45475a"
+blue = "0x89b4fa"
+cyan = "0x94e2d5"
+green = "0xa6e3a1"
+magenta = "0xf5c2e7"
+red = "0xf38ba8"
+white = "0xbac2de"
+yellow = "0xf9e2af"
 
 [colors.primary]
-background = "0x1E1D2F"
-foreground = "0xD9E0EE"
+background = "0x1e1e2e"
+foreground = "0xcdd6f4"
 
 [cursor]
 blink_interval = 500

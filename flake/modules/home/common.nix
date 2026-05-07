@@ -28,6 +28,7 @@
       if not set -q SSH_AUTH_SOCK
           eval (ssh-agent -c)
       end
+
     '';
   };
 
@@ -45,7 +46,14 @@
       resurrect
       {
         plugin = catppuccin;
-        extraConfig = "set -g @catppuccin_flavour 'mocha'";
+        extraConfig = ''
+          set -g @catppuccin_flavor 'mocha'
+          set -g @catppuccin_window_status_style "rounded"
+          set -g @catppuccin_window_text " #{b:pane_current_path}"
+          set -g @catppuccin_window_current_text " #{b:pane_current_path}"
+          set -g @catppuccin_window_number "#I"
+          set -g @catppuccin_window_current_number "#I"
+        '';
       }
       {
         plugin = continuum;
@@ -58,6 +66,16 @@
     extraConfig = ''
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g update-environment "SSH_AUTH_SOCK"
+
+      set -g automatic-rename on
+      set -g automatic-rename-format "#{b:pane_current_path}"
+
+      # Status bar — catppuccin v2 requires explicit module declarations
+      set -g status-left-length 100
+      set -g status-right-length 100
+      set -g status-left ""
+      set -g status-right "#{E:@catppuccin_status_directory}"
+      set -ag status-right "#{E:@catppuccin_status_session}"
 
       bind h select-pane -L
       bind j select-pane -D
@@ -87,8 +105,38 @@
     '';
   };
 
-  programs.alacritty.enable = true;
-  xdg.configFile."alacritty/alacritty.toml".source = ../../config/alacritty.toml;
+  programs.alacritty = {
+    enable = true;
+    settings = {
+      bell = { animation = "EaseOutExpo"; duration = 0; };
+      cursor = {
+        blink_interval = 500;
+        blink_timeout = 5;
+        unfocused_hollow = false;
+        style = { blinking = "Off"; shape = "Block"; };
+      };
+      env.TERM = "xterm-256color";
+      general.live_config_reload = true;
+      mouse = {
+        hide_when_typing = true;
+        bindings = [{ action = "PasteSelection"; mouse = "Middle"; }];
+      };
+      selection.semantic_escape_chars = ",│`|:\"' ()[]{}<>";
+      terminal.shell.program = "/run/current-system/sw/bin/tmux";
+      window = {
+        decorations = "full";
+        dynamic_title = true;
+        startup_mode = "Maximized";
+        dimensions = { columns = 160; lines = 80; };
+        padding = { x = 4; y = 4; };
+      };
+    };
+  };
+
+  stylix.targets = {
+    neovim.enable = false;
+    tmux.enable = false;
+  };
 
   programs.fzf.enable = true;
   programs.zoxide.enable = true;

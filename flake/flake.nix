@@ -15,9 +15,13 @@
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
     };
+    stylix = {
+      url = "github:danth/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim, llm-agents }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixvim, llm-agents, stylix }:
   let
     system = "x86_64-linux";
     pkgs-unstable = import nixpkgs-unstable {
@@ -41,6 +45,7 @@
         modules = [
           ./hosts/DIY-Desktop/configuration.nix
           home-manager.nixosModules.home-manager
+          stylix.nixosModules.stylix
           (homeManagerModule { rytter = import ./users/rytter/home.nix; })
         ];
       };
@@ -51,6 +56,7 @@
         modules = [
           ./hosts/T480/configuration.nix
           home-manager.nixosModules.home-manager
+          stylix.nixosModules.stylix
           (homeManagerModule { rytter = import ./users/rytter/home.nix; })
         ];
       };
@@ -61,6 +67,7 @@
         modules = [
           ./hosts/patrick-desktop/configuration.nix
           home-manager.nixosModules.home-manager
+          stylix.nixosModules.stylix
           (homeManagerModule { pallep = import ./users/patrick/home.nix; })
         ];
       };

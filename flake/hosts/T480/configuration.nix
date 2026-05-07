@@ -3,6 +3,7 @@
     ./hardware-configuration.nix
     ../../modules/nixos/base.nix
     ../../modules/nixos/desktop.nix
+    ../../modules/nixos/stylix.nix
     ../../users/rytter/nixos.nix
   ];
 
