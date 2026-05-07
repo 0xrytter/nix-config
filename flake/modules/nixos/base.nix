@@ -8,6 +8,14 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.permittedInsecurePackages = [ "beekeeper-studio-5.3.4" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.substituters = [
+    "https://cache.nixos.org"
+    "https://nix-community.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCUSin4="
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -15,7 +23,6 @@
   networking.networkmanager.enable = true;
 
   programs.fish.enable = true;
-  programs.firefox.enable = true;
   programs.nix-ld.enable = true;
   programs.appimage = {
     enable = true;
@@ -36,31 +43,18 @@
     codex
     claude-code
     bitwarden-desktop
-    bitwarden-cli
     git gh
-    gcc13 gnumake clang unzip ripgrep coreutils wget
-    vimPlugins.telescope-live-grep-args-nvim
-    xclip wl-clipboard libxkbcommon
-    fzf zoxide fd
-    bazecor kanata stow
+    wl-clipboard
     tmux neovim
-    jetbrains.webstorm jetbrains.rider
-    wezterm alacritty
+    jetbrains.rider
+    alacritty
     lazygit lazydocker docker-compose
-    qbittorrent
     (with dotnetCorePackages; combinePackages [ sdk_8_0_4xx sdk_9_0 ])
-    erlang elixir nodejs_22 pnpm python3 openssl
-    lsof inotify-tools
+    python3
     beekeeper-studio
-    zed-editor helix code-cursor
-    vlc libreoffice-qt6-fresh
-    discord postgresql
-    fuse appimage-run
-    vivaldi librewolf
-    pavucontrol
-    obsidian brave keepassxc ungoogled-chromium
-    wine wine64
-    webcord
-    lutris cockatrice popsicle
+    vlc
+    discord
+    obsidian keepassxc chromium
+    popsicle
   ];
 }

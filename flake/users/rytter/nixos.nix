@@ -24,6 +24,6 @@
     description = "Jakob Rytter";
     extraGroups = [ "networkmanager" "wheel" "docker" ];
     shell = pkgs.fish;
-    packages = with pkgs; [ mullvad-vpn ];
+    packages = with pkgs; [ mullvad-vpn qbittorrent webcord ];
   };
 }
