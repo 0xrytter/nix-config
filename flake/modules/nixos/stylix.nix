@@ -5,6 +5,8 @@
     image = pkgs.runCommand "mocha-wallpaper" { buildInputs = [ pkgs.imagemagick ]; } ''
       convert -size 1920x1080 xc:#1e1e2e $out
     '';
+    targets.gnome.enable = false;
+
     fonts = {
       monospace = {
         package = pkgs.nerd-fonts.jetbrains-mono;
