@@ -35,6 +35,7 @@
       lg = "lazygit";
       ld = "lazydocker";
       nd = "nix develop";
+      ai = "claude";
     };
   };
 
