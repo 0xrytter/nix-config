@@ -45,14 +45,9 @@
       yank
       resurrect
       {
-        plugin = catppuccin;
+        plugin = gruvbox;
         extraConfig = ''
-          set -g @catppuccin_flavor 'mocha'
-          set -g @catppuccin_window_status_style "rounded"
-          set -g @catppuccin_window_text " #{b:pane_current_path}"
-          set -g @catppuccin_window_current_text " #{b:pane_current_path}"
-          set -g @catppuccin_window_number "#I"
-          set -g @catppuccin_window_current_number "#I"
+          set -g @gruvbox_flavour 'dark'
         '';
       }
       {
@@ -70,12 +65,10 @@
       set -g automatic-rename on
       set -g automatic-rename-format "#{b:pane_current_path}"
 
-      # Status bar — catppuccin v2 requires explicit module declarations
       set -g status-left-length 100
       set -g status-right-length 100
       set -g status-left ""
-      set -g status-right "#{E:@catppuccin_status_directory}"
-      set -ag status-right "#{E:@catppuccin_status_session}"
+      set -g status-right " #{b:pane_current_path} | #S "
 
       bind h select-pane -L
       bind j select-pane -D
@@ -135,7 +128,6 @@
 
   stylix.targets = {
     neovim.enable = false;
-    tmux.enable = false;
   };
 
   programs.fzf.enable = true;

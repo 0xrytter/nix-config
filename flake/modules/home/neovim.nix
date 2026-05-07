@@ -51,9 +51,8 @@
       }
     ];
 
-    colorschemes.catppuccin = {
+    colorschemes.gruvbox = {
       enable = true;
-      settings.flavour = "mocha";
     };
 
     plugins = {
