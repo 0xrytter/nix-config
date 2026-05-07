@@ -18,16 +18,20 @@
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    tmux-gruvbox = {
+      url = "github:egel/tmux-gruvbox";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix }:
+  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, tmux-gruvbox }:
   let
     system = "x86_64-linux";
     agents = llm-agents.packages.${system};
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      home-manager.extraSpecialArgs = { inherit agents; };
+      home-manager.extraSpecialArgs = { inherit agents tmux-gruvbox; };
       home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
       home-manager.users = users;
     };

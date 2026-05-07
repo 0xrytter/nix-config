@@ -1,4 +1,4 @@
-{ pkgs, agents, ... }: {
+{ pkgs, agents, tmux-gruvbox, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -45,9 +45,13 @@
       yank
       resurrect
       {
-        plugin = gruvbox;
+        plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
+          pluginName = "tmux-gruvbox";
+          version = "master";
+          src = tmux-gruvbox;
+        };
         extraConfig = ''
-          set -g @gruvbox_flavour 'dark'
+          set -g @tmux-gruvbox 'dark'
         '';
       }
       {
@@ -67,8 +71,6 @@
 
       set -g status-left-length 100
       set -g status-right-length 100
-      set -g status-left ""
-      set -g status-right " #{b:pane_current_path} | #S "
 
       bind h select-pane -L
       bind j select-pane -D
