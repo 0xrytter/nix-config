@@ -114,6 +114,7 @@
     # AI coding agents
     agents.opencode
     agents.pi
+    pkgs-unstable.t3code
     # formatters for neovim/conform
     stylua
     prettierd
