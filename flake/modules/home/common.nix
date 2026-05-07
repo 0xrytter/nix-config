@@ -69,10 +69,8 @@
       set -g automatic-rename on
       set -g automatic-rename-format "#{b:pane_current_path}"
 
-      set -g status-left-length 100
-      set -g status-right-length 100
-      set -g status-left " #S "
-      set -g status-right " #{b:pane_current_path} | %H:%M "
+      set -g status-left ""
+      set -g status-right ""
 
       bind h select-pane -L
       bind j select-pane -D
