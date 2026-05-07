@@ -21,16 +21,24 @@
     interactiveShellInit = ''
       fish_vi_key_bindings
 
-      if not pgrep ssh-agent > /dev/null
+      if not set -q SSH_AUTH_SOCK
           eval (ssh-agent -c)
           ssh-add
       end
-      if not set -q SSH_AUTH_SOCK
-          eval (ssh-agent -c)
-      end
-
     '';
+    shellAbbrs = {
+      g = "git";
+      ga = "git add";
+      gc = "git commit";
+      gp = "git push";
+      gs = "git status";
+      lg = "lazygit";
+      ld = "lazydocker";
+      nd = "nix develop";
+    };
   };
+
+  programs.starship.enable = true;
 
   programs.tmux = {
     enable = true;
@@ -97,6 +105,8 @@
 
       bind '"' split-window -v -c "#{pane_current_path}"
       bind % split-window -h -c "#{pane_current_path}"
+
+      bind-key s run-shell "sesh connect \"$(sesh list | fzf --height 40% --reverse)\""
     '';
   };
 
@@ -170,9 +180,7 @@
   home.packages = with pkgs; [
     fd
     ripgrep
-    gh
-    lazygit
-    lazydocker
+    sesh
     easyeffects
     # AI coding agents
     agents.opencode

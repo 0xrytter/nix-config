@@ -120,6 +120,7 @@
             enable = true;
             settings.Lua.completion.callSnippet = "Replace";
           };
+          nixd.enable = true;
         };
       };
 
@@ -201,7 +202,7 @@
         modules = {
           ai = { n_lines = 500; };
           surround = { };
-          statusline = { use_icons = false; };
+          statusline = { use_icons = true; };
         };
       };
 
@@ -227,11 +228,6 @@
             autosave_changes = false;
           };
         };
-      };
-
-      neogit = {
-        enable = true;
-        settings.integrations.diffview = true;
       };
 
       diffview.enable = true;
