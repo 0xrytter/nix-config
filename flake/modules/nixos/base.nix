@@ -1,4 +1,10 @@
 { pkgs, ... }: {
+  nixpkgs.overlays = [
+    (final: prev: {
+      openldap = prev.openldap.overrideAttrs { doCheck = false; };
+    })
+  ];
+
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.permittedInsecurePackages = [ "beekeeper-studio-5.3.4" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
