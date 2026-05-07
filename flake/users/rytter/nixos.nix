@@ -19,6 +19,8 @@
     variant = "colemak_dh_iso";
   };
 
+  nix.settings.trusted-users = [ "rytter" ];
+
   users.users.rytter = {
     isNormalUser = true;
     description = "Jakob Rytter";
