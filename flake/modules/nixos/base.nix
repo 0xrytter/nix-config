@@ -49,7 +49,7 @@
     wl-clipboard
     tmux neovim
     jetbrains.rider
-    alacritty
+    alacritty ghostty
     lazygit lazydocker docker-compose
     (with dotnetCorePackages; combinePackages [ sdk_8_0_4xx sdk_9_0 ])
     python3
