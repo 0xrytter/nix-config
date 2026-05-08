@@ -267,6 +267,9 @@
         vim.opt.clipboard = 'unnamedplus'
       end)
 
+      vim.opt.autoread = true
+      vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, { command = 'checktime' })
+
       vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
       vim.cmd.hi 'Comment gui=none'
 

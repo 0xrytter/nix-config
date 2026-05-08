@@ -109,7 +109,7 @@
       bind c new-window -c "#{pane_current_path}"
 
       bind-key s run-shell "sesh connect \"$(sesh list | fzf --height 40% --reverse)\""
-      bind-key b run-shell 'tmux capture-pane -pS -32768 > /tmp/tmux-scrollback && tmux new-window "nvim /tmp/tmux-scrollback"'
+      bind-key b run-shell 'tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; tmux select-window -t scratch 2>/dev/null || tmux new-window -n scratch "nvim /tmp/tmux-scrollback"'
     '';
   };
 
