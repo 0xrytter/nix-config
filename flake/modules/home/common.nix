@@ -74,6 +74,7 @@
     extraConfig = ''
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g update-environment "SSH_AUTH_SOCK"
+      set -g history-limit 50000
 
       set -g automatic-rename on
       set -g automatic-rename-format "#{b:pane_current_path}"
@@ -109,7 +110,7 @@
       bind c new-window -c "#{pane_current_path}"
 
       bind-key s run-shell "sesh connect \"$(sesh list | fzf --height 40% --reverse)\""
-      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; tmux select-window -t scratch 2>/dev/null || tmux new-window -n scratch "nvim /tmp/tmux-scrollback"; fi'
+      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; tmux select-window -t scratch 2>/dev/null || tmux new-window -n scratch "nvim + /tmp/tmux-scrollback"; fi'
     '';
   };
 

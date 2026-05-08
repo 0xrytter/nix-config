@@ -269,6 +269,10 @@
 
       vim.opt.autoread = true
       vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, { command = 'checktime' })
+      vim.api.nvim_create_autocmd('BufReadPost', {
+        pattern = '/tmp/tmux-scrollback',
+        command = 'normal! G',
+      })
 
       vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
       vim.cmd.hi 'Comment gui=none'
