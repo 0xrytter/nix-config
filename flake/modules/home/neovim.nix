@@ -259,6 +259,7 @@
       luvit-meta
       nvim-ts-autotag
       nvim-web-devicons
+      baleia-nvim
     ];
 
     extraConfigLua = ''
@@ -269,6 +270,12 @@
 
       vim.opt.autoread = true
       vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, { command = 'checktime' })
+
+      local baleia = require('baleia').setup()
+      vim.api.nvim_create_autocmd('BufReadPost', {
+        pattern = '/tmp/tmux-scrollback-*',
+        callback = function() baleia.once(vim.api.nvim_get_current_buf()) end,
+      })
 
       vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
       vim.cmd.hi 'Comment gui=none'
