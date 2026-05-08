@@ -67,7 +67,6 @@
         plugin = continuum;
         extraConfig = ''
           set -g @continuum-save-interval '5'
-          set -g @continuum-restore 'on'
         '';
       }
     ];
@@ -75,6 +74,7 @@
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g update-environment "SSH_AUTH_SOCK"
       set -g history-limit 50000
+      run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
       set -g automatic-rename on
       set -g automatic-rename-format "#{b:pane_current_path}"
