@@ -151,7 +151,7 @@
   gtk.gtk4.theme = null;
 
   gtk.iconTheme = {
-    name = "Gruvbox-Dark";
+    name = "oomox-gruvbox-dark";
     package = pkgs.gruvbox-dark-icons-gtk;
   };
 
