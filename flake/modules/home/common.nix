@@ -115,24 +115,37 @@
     '';
   };
 
-  programs.ghostty = {
+  programs.alacritty = {
     enable = true;
     settings = {
-      command = "/run/current-system/sw/bin/tmux";
-      font-family = "JetBrainsMono Nerd Font";
-      font-size = 13;
-      cursor-style = "block";
-      cursor-style-blink = false;
-      mouse-hide-while-typing = true;
-      window-padding-x = 4;
-      window-padding-y = 4;
+      bell = { animation = "EaseOutExpo"; duration = 0; };
+      cursor = {
+        blink_interval = 500;
+        blink_timeout = 5;
+        unfocused_hollow = false;
+        style = { blinking = "Off"; shape = "Block"; };
+      };
+      env.TERM = "xterm-256color";
+      general.live_config_reload = true;
+      mouse = {
+        hide_when_typing = true;
+        bindings = [{ action = "PasteSelection"; mouse = "Middle"; }];
+      };
+      selection.semantic_escape_chars = ",│`|:\"' ()[]{}<>";
+      terminal.shell.program = "/run/current-system/sw/bin/tmux";
+      window = {
+        decorations = "full";
+        dynamic_title = true;
+        startup_mode = "Maximized";
+        dimensions = { columns = 160; lines = 80; };
+        padding = { x = 4; y = 4; };
+      };
     };
   };
 
   stylix.targets = {
     neovim.enable = false;
     qt.enable = false;
-    ghostty.enable = false;
   };
 
   gtk.gtk4.theme = null;
