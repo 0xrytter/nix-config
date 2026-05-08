@@ -126,13 +126,13 @@
       mouse-hide-while-typing = true;
       window-padding-x = 4;
       window-padding-y = 4;
-      maximize-on-start = true;
     };
   };
 
   stylix.targets = {
     neovim.enable = false;
     qt.enable = false;
+    ghostty.enable = false;
   };
 
   gtk.gtk4.theme = null;
