@@ -37,6 +37,7 @@
       ld = "lazydocker";
       nd = "nix develop";
       ai = "claude";
+      tmr = "tmux source ~/.config/tmux/tmux.conf";
     };
   };
 
@@ -57,11 +58,12 @@
       {
         plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
           pluginName = "tmux-gruvbox";
+          rtpFilePath = "gruvbox-tpm.tmux";
           version = "master";
           src = tmux-gruvbox;
         };
         extraConfig = ''
-          set -g @tmux-gruvbox 'dark'
+          set -g @tmux-gruvbox "dark"
         '';
       }
       {
@@ -79,9 +81,6 @@
 
       set -g automatic-rename on
       set -g automatic-rename-format "#{b:pane_current_path}"
-
-      set -g status-left ""
-      set -g status-right ""
 
       bind h select-pane -L
       bind j select-pane -D
@@ -137,7 +136,6 @@
         decorations = "full";
         dynamic_title = true;
         startup_mode = "Maximized";
-        dimensions = { columns = 160; lines = 80; };
         padding = { x = 4; y = 4; };
       };
     };
@@ -146,6 +144,7 @@
   stylix.targets = {
     neovim.enable = false;
     qt.enable = false;
+    tmux.enable = false;
   };
 
   gtk.gtk4.theme = null;
@@ -186,6 +185,8 @@
   };
   home.file.".claude/settings.json".source = ../../config/claude-settings.json;
   home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
+
+  home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
 
   home.packages = with pkgs; [
     fd
