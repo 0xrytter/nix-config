@@ -21,6 +21,22 @@
 
   nix.settings.trusted-users = [ "rytter" ];
 
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings = {
+        main.capslock = "overload(nav, capslock)";
+        nav = {
+          n = "left";
+          e = "down";
+          i = "up";
+          o = "right";
+        };
+      };
+    };
+  };
+
   users.users.rytter = {
     isNormalUser = true;
     description = "Jakob Rytter";
