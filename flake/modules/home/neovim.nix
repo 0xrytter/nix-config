@@ -29,6 +29,11 @@
 
     keymaps = [
       { mode = "n"; key = "<leader>x"; action = ":bd<CR>"; options.desc = "Close current buffer"; }
+      { mode = "n"; key = "<leader>ya"; action = ":%y+<CR>"; options.desc = "Yank entire buffer to clipboard"; }
+      { mode = "n"; key = "n"; action = "nzz"; options.desc = "Next search result centered"; }
+      { mode = "n"; key = "N"; action = "Nzz"; options.desc = "Prev search result centered"; }
+      { mode = "n"; key = "<leader>yp"; action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:p')) end"; options.desc = "Yank absolute file path"; }
+      { mode = "n"; key = "<leader>yr"; action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:.')) end"; options.desc = "Yank relative file path"; }
       { mode = "n"; key = "<Esc>"; action = "<cmd>nohlsearch<CR>"; }
       { mode = "n"; key = "<leader>q"; action.__raw = "vim.diagnostic.setloclist"; options.desc = "Open diagnostic Quickfix list"; }
       { mode = "t"; key = "<Esc><Esc>"; action = "<C-\\><C-n>"; options.desc = "Exit terminal mode"; }
@@ -47,7 +52,7 @@
         event = [ "TextYankPost" ];
         desc = "Highlight when yanking text";
         group = "kickstart-highlight-yank";
-        callback.__raw = "function() vim.highlight.on_yank() end";
+        callback.__raw = "function() vim.hl.on_yank() end";
       }
     ];
 
@@ -136,6 +141,7 @@
       };
 
       luasnip.enable = true;
+      nvim-autopairs.enable = true;
       cmp-nvim-lsp.enable = true;
       cmp-path.enable = true;
       cmp_luasnip.enable = true;
@@ -274,7 +280,11 @@
       local baleia = require('baleia').setup()
       vim.api.nvim_create_autocmd('BufReadPost', {
         pattern = '/tmp/tmux-scrollback-*',
-        callback = function() baleia.once(vim.api.nvim_get_current_buf()) end,
+        callback = function()
+          local buf = vim.api.nvim_get_current_buf()
+          baleia.once(buf)
+          vim.bo[buf].modified = false
+        end,
       })
 
       vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
@@ -339,7 +349,7 @@
           map('gD',        vim.lsp.buf.declaration,                              '[G]oto [D]eclaration')
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             local hl = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf, group = hl, callback = vim.lsp.buf.document_highlight,
@@ -356,7 +366,7 @@
             })
           end
 
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')

@@ -27,12 +27,12 @@
     keyboards.default = {
       ids = [ "*" ];
       settings = {
-        main.capslock = "overload(nav, capslock)";
+        main.capslock = "layer(nav)";
         nav = {
-          n = "left";
-          e = "down";
-          i = "up";
-          o = "right";
+          j = "left";
+          k = "down";
+          l = "up";
+          semicolon = "right";
         };
       };
     };

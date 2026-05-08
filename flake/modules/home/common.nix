@@ -64,6 +64,7 @@
         };
         extraConfig = ''
           set -g @tmux-gruvbox "dark"
+          set -g @tmux-gruvbox-right-status-z "#h "
         '';
       }
       {
@@ -109,7 +110,7 @@
       bind % split-window -h -c "#{pane_current_path}"
       bind c new-window -c "#{pane_current_path}"
 
-      bind-key s display-popup -E 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
+      bind-key s display-popup -E -w 80% -h 80% 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
       bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; if tmux select-window -t scratch 2>/dev/null; then nvim --server /tmp/nvim-scratch-#{session_id}.sock --remote-send "<Esc><Esc>:e! /tmp/tmux-scrollback-#{session_id}<CR>G" 2>/dev/null || tmux respawn-pane -t scratch -k "nvim --listen /tmp/nvim-scratch-#{session_id}.sock + /tmp/tmux-scrollback-#{session_id}"; else tmux new-window -n scratch "nvim --listen /tmp/nvim-scratch-#{session_id}.sock + /tmp/tmux-scrollback-#{session_id}"; fi; fi'
     '';
   };
