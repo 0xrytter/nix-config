@@ -268,6 +268,13 @@
         vim.opt.clipboard = 'unnamedplus'
       end)
 
+      for _, mode in ipairs({ 'n', 'x', 'o' }) do
+        vim.keymap.set(mode, '<Left>',  'h')
+        vim.keymap.set(mode, '<Right>', 'l')
+        vim.keymap.set(mode, '<Down>',  'j')
+        vim.keymap.set(mode, '<Up>',    'k')
+      end
+
       vim.opt.autoread = true
       vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, { command = 'checktime' })
 
