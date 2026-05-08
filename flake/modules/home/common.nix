@@ -110,7 +110,7 @@
       bind c new-window -c "#{pane_current_path}"
 
       bind-key s run-shell "sesh connect \"$(sesh list | fzf --height 40% --reverse)\""
-      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; tmux select-window -t scratch 2>/dev/null || tmux new-window -n scratch "nvim + /tmp/tmux-scrollback"; fi'
+      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; if tmux select-window -t scratch 2>/dev/null; then nvim --server /tmp/nvim-scratch.sock --remote-send "<Esc>:checktime<CR>G" 2>/dev/null; else tmux new-window -n scratch "nvim --listen /tmp/nvim-scratch.sock + /tmp/tmux-scrollback"; fi; fi'
     '';
   };
 
