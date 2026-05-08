@@ -110,7 +110,7 @@
       bind % split-window -h -c "#{pane_current_path}"
       bind c new-window -c "#{pane_current_path}"
 
-      bind-key s display-popup -E "sesh connect $(sesh list | fzf)"
+      bind-key s display-popup -E 'sesh connect $(sesh list | fzf)'
       bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -pS -32768 > /tmp/tmux-scrollback; if tmux select-window -t scratch 2>/dev/null; then if [ "$(tmux display-message -t scratch -p "#{pane_current_command}")" = "nvim" ]; then tmux send-keys -t scratch Escape :checktime Enter G; else tmux send-keys -t scratch "nvim + /tmp/tmux-scrollback" Enter; fi; else tmux new-window -n scratch "nvim + /tmp/tmux-scrollback"; fi; fi'
     '';
   };
