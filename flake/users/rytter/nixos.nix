@@ -17,6 +17,7 @@
   services.xserver.xkb = {
     layout = "us";
     variant = "colemak_dh_iso";
+    options = "compose:ralt";
   };
 
   nix.settings.trusted-users = [ "rytter" ];
