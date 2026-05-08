@@ -1,6 +1,4 @@
 { pkgs, ... }: {
-  nixpkgs.config.allowUnfree = true;
-
   programs.nixvim = {
     enable = true;
 
@@ -221,8 +219,6 @@
       };
 
       diffview.enable = true;
-
-      git-conflict.enable = true;
 
       neotest = {
         enable = true;
