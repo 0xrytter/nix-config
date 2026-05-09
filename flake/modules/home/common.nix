@@ -67,6 +67,7 @@
           set -g @tmux-gruvbox "dark"
           set -g @tmux-gruvbox-right-status-z "#h "
           set -g @tmux-gruvbox-right-status-y "#(upower -i /org/freedesktop/UPower/devices/headset_dev_00_22_BB_B9_F9_C0 2>/dev/null | awk '/percentage/{f=1; print \"󰋋 \" $2} END{if(!f) print \"󰋋 --\"}') "
+          set -g @tmux-gruvbox-right-status-x "#(date '+%H:%M') "
         '';
       }
       {
