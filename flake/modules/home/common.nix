@@ -39,9 +39,7 @@
       ai = "claude";
       tmr = "tmux source ~/.config/tmux/tmux.conf";
       fsr = "source ~/.config/fish/config.fish";
-      micon = "pactl set-card-profile bluez_card.00_22_BB_B9_F9_C0 headset-head-unit";
-      micoff = "pactl set-card-profile bluez_card.00_22_BB_B9_F9_C0 a2dp-sink";
-    };
+};
   };
 
   programs.starship.enable = true;
@@ -199,7 +197,6 @@
     ripgrep
     sesh
     easyeffects
-    pulseaudio
     # AI coding agents
     agents.opencode
     agents.pi
