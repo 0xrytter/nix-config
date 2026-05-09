@@ -81,6 +81,7 @@
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g update-environment "SSH_AUTH_SOCK"
       set -g history-limit 50000
+      set -ga terminal-overrides ',*:smcup@:rmcup@'
       run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
 
       set -g automatic-rename on
