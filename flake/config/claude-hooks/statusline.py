@@ -38,14 +38,14 @@ PLAN_MULTIPLIER = _plan_multiplier()
 CTX_AMBER = 50
 CTX_RED   = 80
 
-# Catppuccin Mocha
+# Gruvbox Dark
 _RST       = "\033[0m"
-_SEP       = "#6E6C7E"  # overlay — pipes and dots
-_DIM       = "#988BA2"  # subtext — labels and nav
-_HIGHLIGHT = "#89b4fa"  # blue — highlighted values
-_GREEN     = "#a6e3a1"  # green — ok/low
-_YELLOW    = "#f9e2af"  # yellow — warning
-_RED       = "#f38ba8"  # red — critical
+_SEP       = "#665c54"  # bg3 — pipes and dots
+_DIM       = "#928374"  # gray — labels and nav
+_HIGHLIGHT = "#83a598"  # blue — highlighted values
+_GREEN     = "#b8bb26"  # green — ok/low
+_YELLOW    = "#fabd2f"  # yellow — warning
+_RED       = "#fb4934"  # red — critical
 
 def col(hex_color, text):
     r, g, b = int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:7], 16)
