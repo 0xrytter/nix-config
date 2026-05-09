@@ -38,6 +38,28 @@
     };
   };
 
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+
+  services.pipewire.wireplumber.extraConfig.bluetoothEnhancements = {
+    "monitor.bluez5.properties" = {
+      "bluez5.enable-msbc" = true;
+      "bluez5.enable-hw-volume" = true;
+      "bluez5.headset-roles" = [ "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag" ];
+    };
+  };
+  services.pipewire.wireplumber.extraConfig.suspendOnIdle = {
+    "monitor.bluez5.rules" = [
+      {
+        matches = [ { "node.name" = "~bluez_output.*"; } ];
+        actions."update-props" = {
+          "session.suspend-timeout-seconds" = 5;
+          "node.pause-on-idle" = true;
+        };
+      }
+    ];
+  };
+
   users.users.rytter = {
     isNormalUser = true;
     description = "Jakob Rytter";

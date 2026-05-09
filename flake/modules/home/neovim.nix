@@ -277,7 +277,7 @@
       vim.opt.autoread = true
       vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, { command = 'checktime' })
 
-      local baleia = require('baleia').setup()
+      local baleia = require('baleia').setup({ async = false })
       vim.api.nvim_create_autocmd('BufReadPost', {
         pattern = '/tmp/tmux-scrollback-*',
         callback = function()

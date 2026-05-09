@@ -38,6 +38,9 @@
       nd = "nix develop";
       ai = "claude";
       tmr = "tmux source ~/.config/tmux/tmux.conf";
+      fsr = "source ~/.config/fish/config.fish";
+      micon = "bluetoothctl set-profile 00:22:BB:B9:F9:C0 headset-head-unit-msbc";
+      micoff = "bluetoothctl set-profile 00:22:BB:B9:F9:C0 a2dp-sink";
     };
   };
 
@@ -65,6 +68,8 @@
         extraConfig = ''
           set -g @tmux-gruvbox "dark"
           set -g @tmux-gruvbox-right-status-z "#h "
+          set -g @tmux-gruvbox-right-status-y "#(upower -i /org/freedesktop/UPower/devices/headset_dev_00_22_BB_B9_F9_C0 2>/dev/null | awk '/percentage/{print $2}') "
+          set -g @tmux-gruvbox-right-status-x "#(wpctl status 2>/dev/null | grep -q 'bluez_input.00_22' && echo 'MIC' || echo) "
         '';
       }
       {
@@ -111,7 +116,7 @@
       bind c new-window -c "#{pane_current_path}"
 
       bind-key s display-popup -E -w 80% -h 80% 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
-      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; if tmux select-window -t scratch 2>/dev/null; then nvim --server /tmp/nvim-scratch-#{session_id}.sock --remote-send "<Esc><Esc>:e! /tmp/tmux-scrollback-#{session_id}<CR>G" 2>/dev/null || tmux respawn-pane -t scratch -k "nvim --listen /tmp/nvim-scratch-#{session_id}.sock + /tmp/tmux-scrollback-#{session_id}"; else tmux new-window -n scratch "nvim --listen /tmp/nvim-scratch-#{session_id}.sock + /tmp/tmux-scrollback-#{session_id}"; fi; fi'
+      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; tmux kill-window -t scratch 2>/dev/null; tmux new-window -n scratch "nvim -n + /tmp/tmux-scrollback-#{session_id}"; fi'
     '';
   };
 
