@@ -42,7 +42,7 @@ CTX_RED   = 80
 _RST       = "\033[0m"
 _SEP       = "#665c54"  # bg3 — pipes and dots
 _DIM       = "#928374"  # gray — labels and nav
-_HIGHLIGHT = "#83a598"  # blue — highlighted values
+_HIGHLIGHT = "#fe8019"  # orange — highlighted values
 _GREEN     = "#b8bb26"  # green — ok/low
 _YELLOW    = "#fabd2f"  # yellow — warning
 _RED       = "#fb4934"  # red — critical
@@ -94,13 +94,23 @@ def session_activity(p):
 
 
 def time_until(ts):
-    delta = int(ts - time.time())
-    if delta <= 0:
-        return "now"
-    d, h, m = delta // 86400, (delta % 86400) // 3600, (delta % 3600) // 60
-    if d:  return f"{d}d{h}h"
-    if h:  return f"{h}h{m:02d}m"
-    return f"{m}m"
+    try:
+        ts = float(ts)
+        # Guard against millisecond timestamps
+        if ts > time.time() * 100:
+            ts /= 1000
+        delta = int(ts - time.time())
+        if delta <= 0:
+            return None
+        # Sanity check — 5h window can't reset in more than 5h
+        if delta > 5 * 3600 + 300:
+            return None
+        d, h, m = delta // 86400, (delta % 86400) // 3600, (delta % 3600) // 60
+        if d:  return f"{d}d{h}h"
+        if h:  return f"{h}h{m:02d}m"
+        return f"{m}m"
+    except Exception:
+        return None
 
 
 human, tools = session_activity(path) if path else (0, 0)
