@@ -202,7 +202,7 @@ _HEADSET_CACHE = Path("/tmp/tmux-ai-headset")
 
 def headset_status() -> str | None:
     try:
-        if _HEADSET_CACHE.exists() and time.time() - _HEADSET_CACHE.stat().st_mtime < 30:
+        if _HEADSET_CACHE.exists() and time.time() - _HEADSET_CACHE.stat().st_mtime < 10:
             return _HEADSET_CACHE.read_text() or None
     except Exception:
         pass
@@ -210,18 +210,22 @@ def headset_status() -> str | None:
         r = subprocess.run(["upower", "-e"], capture_output=True, text=True)
         devices = [d for d in r.stdout.splitlines() if "headset" in d.lower()]
         if not devices:
-            return None
+            result = f"󰋋 {col(_DIM, '--')}"
+            _HEADSET_CACHE.write_text(result)
+            return result
         r2 = subprocess.run(["upower", "-i", devices[0]], capture_output=True, text=True)
         for line in r2.stdout.splitlines():
             if "percentage" in line:
                 pct = int(line.split()[-1].rstrip('%'))
                 color = _RED if pct <= 25 else (_YLW if pct <= 50 else _GRN)
-                result = f"{dim('󰋋')} {col(color, f'{pct}%')}"
+                result = f"󰋋 {col(color, f'{pct}%')}"
                 _HEADSET_CACHE.write_text(result)
                 return result
     except Exception:
         pass
-    return f"{dim('󰋋')} {col(_DIM, '--')}"
+    result = f"󰋋 {col(_DIM, '--')}"
+    _HEADSET_CACHE.write_text(result)
+    return result
 
 
 def pi_format(pi_pid: int) -> str | None:
