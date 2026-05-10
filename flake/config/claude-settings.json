@@ -17,9 +17,5 @@
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "python3 $HOME/.claude/hooks/statusline.py"
-  },
   "model": "sonnet"
 }
