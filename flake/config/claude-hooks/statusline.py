@@ -40,9 +40,9 @@ CTX_RED   = 80
 
 # Gruvbox Dark
 _RST       = "\033[0m"
-_SEP       = "#665c54"  # bg3 — pipes and dots
-_DIM       = "#928374"  # gray — labels and nav
-_HIGHLIGHT = "#fe8019"  # orange — highlighted values
+_SEP       = "#665c54"  # bg4 — pipes and dots
+_DIM       = "#a89984"  # fg4 — labels and nav
+_HIGHLIGHT = "#ebdbb2"  # fg  — highlighted values
 _GREEN     = "#b8bb26"  # green — ok/low
 _YELLOW    = "#fabd2f"  # yellow — warning
 _RED       = "#fb4934"  # red — critical
