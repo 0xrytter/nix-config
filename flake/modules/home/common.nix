@@ -32,7 +32,10 @@
     functions.pi = ''
       if not docker image inspect pi-sandbox >/dev/null 2>&1
         echo "Building pi-sandbox image..."
-        docker build -t pi-sandbox ~/.config/pi-sandbox/
+        set -l ctx (mktemp -d)
+        cp (readlink -f ~/.config/pi-sandbox/Dockerfile) $ctx/Dockerfile
+        docker build -t pi-sandbox $ctx
+        rm -rf $ctx
       end
       docker run --rm -it \
         --privileged \
