@@ -243,8 +243,6 @@ nav      = col(_DIM, "compact | clear | rewind | effort | model opusplan")
 rate_str = col(_SEP, " | ").join(rate_parts)
 line2    = "  " + (col(_SEP, " | ").join(filter(None, [rate_str, nav])))
 
-print(f"{line1}\n{line2}")
-
 # Pre-render tmux status to file so the shell dispatcher can read it instantly
 try:
     import subprocess as _sp
