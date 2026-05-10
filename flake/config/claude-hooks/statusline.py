@@ -65,6 +65,23 @@ ctx_window  = data.get("context_window", {})
 ctx_pct     = ctx_window.get("used_percentage") or 0
 rate_limits = data.get("rate_limits", {})
 
+try:
+    live_path = SESSIONS / "live.json"
+    prev = {}
+    try:
+        prev = json.loads(live_path.read_text())
+    except Exception:
+        pass
+    live_path.write_text(json.dumps({
+        "model":       model or prev.get("model", ""),
+        "effort":      effort or prev.get("effort", ""),
+        "ctx_pct":     ctx_pct if ctx_pct else prev.get("ctx_pct", 0),
+        "rate_limits": rate_limits if rate_limits else prev.get("rate_limits", {}),
+        "updated_at":  time.time(),
+    }))
+except Exception:
+    pass
+
 cost = calc_cost(path, model) or (data.get("cost") or {}).get("total_cost_usd") or 0
 
 
@@ -227,3 +244,12 @@ rate_str = col(_SEP, " | ").join(rate_parts)
 line2    = "  " + (col(_SEP, " | ").join(filter(None, [rate_str, nav])))
 
 print(f"{line1}\n{line2}")
+
+# Pre-render tmux status to file so the shell dispatcher can read it instantly
+try:
+    import subprocess as _sp
+    _ai = Path(__file__).parent.parent.parent / ".config" / "tmux" / "ai-status.py"
+    _sp.Popen([sys.executable, str(_ai), "write-claude", "0"],
+              stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+except Exception:
+    pass

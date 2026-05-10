@@ -18,6 +18,10 @@
   };
 
   networking.networkmanager.wifi.powersave = false;
+  boot.extraModprobeConfig = ''
+    options iwlwifi power_save=0 uapsd_disable=1
+    options iwlmvm power_scheme=1
+  '';
 
   services.displayManager.gdm.enable = true;
 

@@ -53,8 +53,8 @@
       {
         matches = [ { "node.name" = "~bluez_output.*"; } ];
         actions."update-props" = {
-          "session.suspend-timeout-seconds" = 5;
-          "node.pause-on-idle" = true;
+          "session.suspend-timeout-seconds" = 0;
+          "node.pause-on-idle" = false;
         };
       }
     ];

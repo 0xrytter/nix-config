@@ -40,8 +40,11 @@
       nd = "nix develop";
       ai = "claude";
       tmr = "tmux source ~/.config/tmux/tmux.conf";
+      apr = "systemctl --user restart wireplumber pipewire pipewire-pulse";
       fsr = "source ~/.config/fish/config.fish";
-};
+      nr  = "bash -c 'cd ~/Projects/nix-config && bash rebuild.sh'";
+      nu  = "bash -c 'cd ~/Projects/nix-config && bash update.sh'";
+    };
   };
 
   programs.starship.enable = true;
@@ -68,7 +71,6 @@
         extraConfig = ''
           set -g @tmux-gruvbox "dark"
           set -g @tmux-gruvbox-right-status-z "#h "
-          set -g @tmux-gruvbox-right-status-y "#(upower -i /org/freedesktop/UPower/devices/headset_dev_00_22_BB_B9_F9_C0 2>/dev/null | awk '/percentage/{f=1; print \"󰋋 \" $2} END{if(!f) print \"󰋋 --\"}') "
           set -g @tmux-gruvbox-right-status-x "#(date '+%H:%M') "
         '';
       }
@@ -117,6 +119,8 @@
 
       bind-key s display-popup -E -w 80% -h 80% 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
       bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; tmux kill-window -t scratch 2>/dev/null; tmux new-window -n scratch "nvim -n + /tmp/tmux-scrollback-#{session_id}"; fi'
+
+      set-hook -g after-select-pane 'refresh-client -S'
     '';
   };
 
@@ -178,10 +182,19 @@
     nix-direnv.enable = true;
   };
 
+  xdg.mimeApps.enable = true;
+  xdg.mimeApps.defaultApplications = {
+    "text/html"                = "chromium-browser.desktop";
+    "x-scheme-handler/http"    = "chromium-browser.desktop";
+    "x-scheme-handler/https"   = "chromium-browser.desktop";
+    "x-scheme-handler/about"   = "chromium-browser.desktop";
+    "x-scheme-handler/unknown" = "chromium-browser.desktop";
+    "x-scheme-handler/msteams" = "teams-for-linux.desktop";
+    "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
+  };
+
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
-
-  services.easyeffects.enable = true;
 
   home.file.".ideavimrc".source = ../../config/ideavimrc;
 
@@ -191,14 +204,25 @@
   };
   home.file.".claude/settings.json".source = ../../config/claude-settings.json;
   home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
+  home.file.".claude/caps.json".source = ../../config/caps.json;
+  home.file.".config/tmux/ai-status.py".source = ../../config/tmux/ai-status.py;
+  home.file.".config/tmux/ai-dispatch.sh" = {
+    source = ../../config/tmux/ai-dispatch.sh;
+    executable = true;
+  };
+
+  home.file.".config/opencode/config.json".source = ../../config/opencode/config.json;
 
   home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
+  home.file.".pi/agent/extensions" = {
+    source = ../../config/pi-extensions;
+    recursive = true;
+  };
 
   home.packages = with pkgs; [
     fd
     ripgrep
     sesh
-    easyeffects
     # AI coding agents
     agents.opencode
     agents.pi

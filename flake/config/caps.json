@@ -1,0 +1,9 @@
+{
+  "_note": "Rate limits by model ID prefix. Update when providers change limits.",
+
+  "gpt": {
+    "messages":     160,
+    "window_hours": 3,
+    "_source":      "OpenAI ChatGPT Plus — 160 messages per 3 hours"
+  }
+}

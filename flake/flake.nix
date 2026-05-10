@@ -31,6 +31,7 @@
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
+      home-manager.backupFileExtension = "hm-bak";
       home-manager.extraSpecialArgs = { inherit agents tmux-gruvbox; };
       home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
       home-manager.users = users;
