@@ -216,12 +216,12 @@ def headset_status() -> str | None:
             if "percentage" in line:
                 pct = int(line.split()[-1].rstrip('%'))
                 color = _RED if pct <= 25 else (_YLW if pct <= 50 else _GRN)
-                result = f"{dim('🎧')} {col(color, f'{pct}%')}"
+                result = f"{dim('󰋋')} {col(color, f'{pct}%')}"
                 _HEADSET_CACHE.write_text(result)
                 return result
     except Exception:
         pass
-    return f"{dim('🎧')} {col(_DIM, '--')}"
+    return f"{dim('󰋋')} {col(_DIM, '--')}"
 
 
 def pi_format(pi_pid: int) -> str | None:
