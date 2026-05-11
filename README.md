@@ -53,7 +53,7 @@ cp $(readlink -f ~/.config/pi-sandbox/Dockerfile) /tmp/pi-sandbox-build/Dockerfi
 docker build -t pi-sandbox /tmp/pi-sandbox-build/
 ```
 
-To bypass the sandbox and run the raw binary (e.g. for debugging):
+Both agents are sandboxed by default with no opt-out flag — this is intentional. If an agent needs access to a different repo, open a second instance in that directory. If you genuinely need unsandboxed access (debugging, one-off tasks), use `command` to bypass the fish function:
 
 ```
 command claude
