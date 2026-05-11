@@ -29,6 +29,23 @@
           ssh-add
       end
     '';
+    functions.claude = ''
+      if not docker image inspect claude-sandbox >/dev/null 2>&1
+        echo "Building claude-sandbox image..."
+        set -l ctx (mktemp -d)
+        cp (readlink -f ~/.config/claude-sandbox/Dockerfile) $ctx/Dockerfile
+        docker build -t claude-sandbox $ctx
+        rm -rf $ctx
+      end
+      docker run --rm -it \
+        --user (id -u):(id -g) \
+        -e HOME=/root \
+        -v (pwd):(pwd) \
+        -v $HOME/.claude:/root/.claude \
+        -v /tmp:/tmp \
+        -w (pwd) \
+        claude-sandbox $argv
+    '';
     functions.pi = ''
       if not docker image inspect pi-sandbox >/dev/null 2>&1
         echo "Building pi-sandbox image..."
@@ -229,6 +246,7 @@
   home.file.".config/opencode/config.json".source = ../../config/opencode/config.json;
 
   home.file.".config/pi-sandbox/Dockerfile".source = ../../config/pi-sandbox/Dockerfile;
+  home.file.".config/claude-sandbox/Dockerfile".source = ../../config/claude-sandbox/Dockerfile;
 
   home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
   home.file.".pi/agent/extensions" = {

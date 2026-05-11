@@ -35,24 +35,34 @@ pi /login
 
 Log in with OpenCode Go credentials to get access to Kimi and other models via the subscription.
 
-### 5. Pi sandbox Docker image
+### 5. Agent sandbox Docker images
 
-The `pi` command runs inside a Docker-in-Docker sandbox — filesystem access is restricted to the current project directory with no access to the host system outside it.
+Both `claude` and `pi` run inside Docker sandboxes — filesystem access is restricted to the current project directory only.
 
-Build the image once after first deploy. The Dockerfile is symlinked from the nix store, so docker can't read it directly — copy first:
+Images auto-build on first run, but building upfront avoids the delay:
 
 ```
+# Claude Code sandbox
+mkdir -p /tmp/claude-sandbox-build
+cp $(readlink -f ~/.config/claude-sandbox/Dockerfile) /tmp/claude-sandbox-build/Dockerfile
+docker build -t claude-sandbox /tmp/claude-sandbox-build/
+
+# Pi sandbox (Docker-in-Docker)
 mkdir -p /tmp/pi-sandbox-build
 cp $(readlink -f ~/.config/pi-sandbox/Dockerfile) /tmp/pi-sandbox-build/Dockerfile
 docker build -t pi-sandbox /tmp/pi-sandbox-build/
 ```
 
-Or just run `pi` in any directory — the fish function will build automatically using the same workaround.
+To bypass the sandbox and run the raw binary (e.g. for debugging):
 
-The image auto-builds if missing when you run `pi`, but building upfront avoids a delay on first use.
+```
+command claude
+command pi
+```
 
 To rebuild after a Dockerfile change:
 
 ```
-docker rmi pi-sandbox && docker build -t pi-sandbox ~/.config/pi-sandbox/
+docker rmi claude-sandbox && docker build -t claude-sandbox /tmp/claude-sandbox-build/
+docker rmi pi-sandbox && docker build -t pi-sandbox /tmp/pi-sandbox-build/
 ```
