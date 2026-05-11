@@ -54,12 +54,14 @@
         docker build -t pi-sandbox $ctx
         rm -rf $ctx
       end
+      set -l pi_start (date +%s)
       docker run --rm -it \
         --privileged \
         -v (pwd):/work \
         -v $HOME/.pi/agent:/root/.pi/agent \
         -w /work \
         pi-sandbox $argv
+      python3 ~/.config/pi-sandbox/pi-log.py (pwd) $pi_start
     '';
     shellAbbrs = {
       g = "git";
@@ -246,6 +248,7 @@
   home.file.".config/opencode/config.json".source = ../../config/opencode/config.json;
 
   home.file.".config/pi-sandbox/Dockerfile".source = ../../config/pi-sandbox/Dockerfile;
+  home.file.".config/pi-sandbox/pi-log.py".source = ../../config/pi-sandbox/pi-log.py;
   home.file.".config/claude-sandbox/Dockerfile".source = ../../config/claude-sandbox/Dockerfile;
 
   home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
