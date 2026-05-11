@@ -40,7 +40,7 @@
       docker run --rm -it \
         --privileged \
         -v (pwd):/work \
-        -v $HOME/.pi/agent:/root/.pi/agent:ro \
+        -v $HOME/.pi/agent:/root/.pi/agent \
         -w /work \
         pi-sandbox $argv
     '';
