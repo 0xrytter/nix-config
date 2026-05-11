@@ -39,11 +39,15 @@ Log in with OpenCode Go credentials to get access to Kimi and other models via t
 
 The `pi` command runs inside a Docker-in-Docker sandbox — filesystem access is restricted to the current project directory with no access to the host system outside it.
 
-Build the image once after first deploy:
+Build the image once after first deploy. The Dockerfile is symlinked from the nix store, so docker can't read it directly — copy first:
 
 ```
-docker build -t pi-sandbox ~/.config/pi-sandbox/
+mkdir -p /tmp/pi-sandbox-build
+cp $(readlink -f ~/.config/pi-sandbox/Dockerfile) /tmp/pi-sandbox-build/Dockerfile
+docker build -t pi-sandbox /tmp/pi-sandbox-build/
 ```
+
+Or just run `pi` in any directory — the fish function will build automatically using the same workaround.
 
 The image auto-builds if missing when you run `pi`, but building upfront avoids a delay on first use.
 
