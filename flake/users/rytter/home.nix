@@ -26,5 +26,14 @@
     set -g status-format[1] "#[align=left]#(bash ~/.config/tmux/ai-dispatch.sh #{pane_current_command} #{pane_pid})"
   '';
 
+  home.sessionVariables = {
+    NIX_CONFIG_ROOT = "/home/rytter/Projects/nix-config";
+    DEVTOOLS_ROOT   = "/home/rytter/Projects/thinglaunch/devtoolsthing";
+  };
+
+  programs.fish.functions.dt = ''
+    $DEVTOOLS_ROOT/.venv/bin/python $DEVTOOLS_ROOT/tools.py $argv
+  '';
+
   home.stateVersion = "24.05";
 }

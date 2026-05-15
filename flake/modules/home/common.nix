@@ -76,8 +76,8 @@
       tmr = "tmux source ~/.config/tmux/tmux.conf";
       apr = "systemctl --user restart wireplumber pipewire pipewire-pulse";
       fsr = "source ~/.config/fish/config.fish";
-      nr  = "bash -c 'cd ~/Projects/nix-config && bash rebuild.sh'";
-      nu  = "bash -c 'cd ~/Projects/nix-config && bash update.sh'";
+      nr  = "bash -c 'cd $NIX_CONFIG_ROOT && bash rebuild.sh'";
+      nu  = "bash -c 'cd $NIX_CONFIG_ROOT && bash update.sh'";
     };
   };
 
