@@ -26,10 +26,10 @@
     set -g status-format[1] "#[align=left]#(bash ~/.config/tmux/ai-dispatch.sh #{pane_current_command} #{pane_pid})"
   '';
 
-  home.sessionVariables = {
-    NIX_CONFIG_ROOT = "/home/rytter/Projects/nix-config";
-    DEVTOOLS_ROOT   = "/home/rytter/Projects/thinglaunch/devtoolsthing";
-  };
+  programs.fish.interactiveShellInit = ''
+    set -gx DEVTOOLS_ROOT (fd -H -t f '.devtoolsthing' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
+    set -gx NIX_CONFIG_ROOT (fd -H -t f '.nix-config' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
+  '';
 
   programs.fish.functions.dt = ''
     $DEVTOOLS_ROOT/.venv/bin/python $DEVTOOLS_ROOT/tools.py $argv
