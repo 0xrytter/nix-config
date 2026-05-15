@@ -35,5 +35,9 @@
     $DEVTOOLS_ROOT/.venv/bin/python $DEVTOOLS_ROOT/tools.py $argv
   '';
 
+  programs.fish.functions.cdm = ''
+    cd (fd -H -t f ".$argv[1]" ~ --max-results 1 | xargs dirname)
+  '';
+
   home.stateVersion = "24.05";
 }
