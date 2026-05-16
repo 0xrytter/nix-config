@@ -37,13 +37,12 @@
         docker build -t claude-sandbox $ctx
         rm -rf $ctx
       end
+      set -l llm_logs (fd -H -t f '^\.llmthing-sessions$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
       docker run --rm -it \
-        --user (id -u):(id -g) \
-        -e HOME=/root \
-        -v (pwd):(pwd) \
+        -v (pwd):/work \
         -v $HOME/.claude:/root/.claude \
-        -v /tmp:/tmp \
-        -w (pwd) \
+        -v $llm_logs:/root/llmthing-logs \
+        -w /work \
         claude-sandbox $argv
     '';
     functions.pi = ''
@@ -76,9 +75,15 @@
       tmr = "tmux source ~/.config/tmux/tmux.conf";
       apr = "systemctl --user restart wireplumber pipewire pipewire-pulse";
       fsr = "source ~/.config/fish/config.fish";
-      nr  = "bash -c 'cd $NIX_CONFIG_ROOT && bash rebuild.sh'";
-      nu  = "bash -c 'cd $NIX_CONFIG_ROOT && bash update.sh'";
     };
+    functions.nr = ''
+      set -l root (fd -H -t f '^\.nix-config$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
+      bash -c "cd $root && bash rebuild.sh"
+    '';
+    functions.nu = ''
+      set -l root (fd -H -t f '^\.nix-config$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
+      bash -c "cd $root && bash update.sh"
+    '';
   };
 
   programs.starship.enable = true;

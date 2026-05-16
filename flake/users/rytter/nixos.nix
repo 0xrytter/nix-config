@@ -65,6 +65,6 @@
     description = "Jakob Rytter";
     extraGroups = [ "networkmanager" "wheel" "docker" "keyd" ];
     shell = pkgs.fish;
-    packages = with pkgs; [ mullvad-vpn qbittorrent webcord ];
+    packages = with pkgs; [ mullvad-vpn qbittorrent webcord jetbrains.pycharm ];
   };
 }
