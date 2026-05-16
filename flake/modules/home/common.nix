@@ -51,6 +51,7 @@
         -e TMUX_AI_PANE=$tmux_ai_pane \
         -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
         -v (pwd):/work \
+        -v /nix/store:/nix/store:ro \
         -v $HOME/.claude:/root/.claude \
         -v $HOME/.config/tmux:/root/.config/tmux:ro \
         -v $tmux_ai_status_dir:$tmux_ai_status_dir \
@@ -87,6 +88,7 @@
         -e TMUX_AI_PANE=$tmux_ai_pane \
         -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
         -v (pwd):/work \
+        -v /nix/store:/nix/store:ro \
         -v $HOME/.pi/agent:/root/.pi/agent \
         -v $HOME/.pi/sessions:/root/.pi/sessions \
         -v $HOME/.pi/rate-log.json:/root/.pi/rate-log.json \
