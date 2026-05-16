@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 Unified AI statusline for tmux status-format[1].
-Called as: ai-status.py <pane_current_command> <pane_pid>
+Called as: ai-status.py <pane_current_command> <pane_pid-or-pane-id>
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -14,6 +15,7 @@ from pathlib import Path
 SESSIONS_DIR = Path.home() / ".claude" / "sessions"
 LIVE_STATE   = SESSIONS_DIR / "live.json"
 CAPS_FILE    = Path.home() / ".claude" / "caps.json"
+STATUS_DIR   = Path(os.environ.get("TMUX_AI_STATUS_DIR", "/tmp/tmux-ai"))
 
 # Gruvbox Dark
 _SEP = "#665c54"
@@ -228,8 +230,10 @@ def headset_status() -> str | None:
     return result
 
 
-def pi_format(pi_pid: int) -> str | None:
-    state_file = Path(f"/tmp/pi-status-{pi_pid}.json")
+def pi_format(state_id: int | str) -> str | None:
+    state_file = STATUS_DIR / f"pi-status-{state_id}.json"
+    if not state_file.exists():
+        state_file = Path(f"/tmp/pi-status-{state_id}.json")
     if not state_file.exists():
         return None
     try:
@@ -297,21 +301,43 @@ def pi_format(pi_pid: int) -> str | None:
 
 _CACHE_DIR = Path("/tmp")
 
+
+def pane_key(arg: str | None = None) -> str:
+    raw = os.environ.get("TMUX_AI_PANE") or arg or ""
+    return raw.replace("%", "").strip()
+
+
+def write_pane_status(key: str, result: str | None) -> None:
+    if not key or key == "0":
+        return
+    try:
+        STATUS_DIR.mkdir(parents=True, exist_ok=True)
+        (STATUS_DIR / f"pane-{key}.status").write_text(result or "")
+    except Exception:
+        pass
+
+
 def main() -> None:
     if len(sys.argv) < 3:
         return
 
-    command  = sys.argv[1]
-    pane_pid = int(sys.argv[2])
+    command = sys.argv[1]
+    target  = sys.argv[2]
+    try:
+        pane_pid = int(target)
+    except Exception:
+        pane_pid = 0
 
     # write-cache modes: called from hooks to pre-render status to file
     if command == "write-claude":
         result = claude_status()
         (_CACHE_DIR / "tmux-ai-claude").write_text(result or "")
+        write_pane_status(pane_key(target), result)
         return
     if command == "write-pi":
-        result = pi_format(pane_pid)  # pane_pid is the pi pid here
-        (_CACHE_DIR / f"tmux-ai-pi-{pane_pid}").write_text(result or "")
+        result = pi_format(pane_key(target) or target)
+        (_CACHE_DIR / f"tmux-ai-pi-{target}").write_text(result or "")
+        write_pane_status(pane_key(target), result)
         return
 
     if command == "headset":

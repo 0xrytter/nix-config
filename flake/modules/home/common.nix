@@ -38,12 +38,30 @@
         rm -rf $ctx
       end
       set -l llm_logs (fd -H -t f '^\.llmthing-sessions$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
+      set -l tmux_ai_status_dir /tmp/tmux-ai
+      set -l tmux_ai_pane ""
+      if set -q TMUX
+        set tmux_ai_pane (tmux display-message -p '#{pane_id}' 2>/dev/null | string replace -a '%' "")
+      end
+      mkdir -p $tmux_ai_status_dir
+      if test -n "$tmux_ai_pane"
+        echo claude > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
+      end
       docker run --rm -it \
+        -e TMUX_AI_PANE=$tmux_ai_pane \
+        -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
         -v (pwd):/work \
         -v $HOME/.claude:/root/.claude \
+        -v $HOME/.config/tmux:/root/.config/tmux:ro \
+        -v $tmux_ai_status_dir:$tmux_ai_status_dir \
         -v $llm_logs:/root/llmthing-logs \
         -w /work \
         claude-sandbox $argv
+      set -l docker_status $status
+      if test -n "$tmux_ai_pane"
+        rm -f $tmux_ai_status_dir/pane-$tmux_ai_pane.kind $tmux_ai_status_dir/pane-$tmux_ai_pane.status
+      end
+      return $docker_status
     '';
     functions.pi = ''
       if not docker image inspect pi-sandbox >/dev/null 2>&1
@@ -54,13 +72,35 @@
         rm -rf $ctx
       end
       set -l pi_start (date +%s)
+      set -l tmux_ai_status_dir /tmp/tmux-ai
+      set -l tmux_ai_pane ""
+      if set -q TMUX
+        set tmux_ai_pane (tmux display-message -p '#{pane_id}' 2>/dev/null | string replace -a '%' "")
+      end
+      mkdir -p $tmux_ai_status_dir $HOME/.pi/sessions
+      touch $HOME/.pi/rate-log.json
+      if test -n "$tmux_ai_pane"
+        echo pi > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
+      end
       docker run --rm -it \
         --privileged \
+        -e TMUX_AI_PANE=$tmux_ai_pane \
+        -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
         -v (pwd):/work \
         -v $HOME/.pi/agent:/root/.pi/agent \
+        -v $HOME/.pi/sessions:/root/.pi/sessions \
+        -v $HOME/.pi/rate-log.json:/root/.pi/rate-log.json \
+        -v $HOME/.claude/caps.json:/root/.claude/caps.json:ro \
+        -v $HOME/.config/tmux:/root/.config/tmux:ro \
+        -v $tmux_ai_status_dir:$tmux_ai_status_dir \
         -w /work \
         pi-sandbox $argv
+      set -l docker_status $status
       python3 ~/.config/pi-sandbox/pi-log.py (pwd) $pi_start
+      if test -n "$tmux_ai_pane"
+        rm -f $tmux_ai_status_dir/pane-$tmux_ai_pane.kind $tmux_ai_status_dir/pane-$tmux_ai_pane.status $tmux_ai_status_dir/pi-status-$tmux_ai_pane.json
+      end
+      return $docker_status
     '';
     shellAbbrs = {
       g = "git";

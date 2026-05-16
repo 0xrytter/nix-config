@@ -1,6 +1,6 @@
 /**
- * Hides the pi footer and writes session state to /tmp for the tmux statusline.
- * The tmux ai-status.py script reads /tmp/pi-status-<pid>.json.
+ * Hides the pi footer and writes session state to a shared status dir for tmux.
+ * Containerized pi is keyed by TMUX_AI_PANE so host tmux can read it.
  * Session costs accumulate in ~/.pi/sessions/. Rate log in ~/.pi/rate-log.json.
  */
 
@@ -11,7 +11,10 @@ import { tmpdir, homedir } from "node:os";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-const STATE_FILE   = join(tmpdir(), `pi-status-${process.pid}.json`);
+const STATUS_DIR   = process.env.TMUX_AI_STATUS_DIR || tmpdir();
+const PANE_ID      = (process.env.TMUX_AI_PANE || "").replace(/%/g, "");
+const STATE_ID     = PANE_ID || String(process.pid);
+const STATE_FILE   = join(STATUS_DIR, `pi-status-${STATE_ID}.json`);
 const PI_DIR       = join(homedir(), ".pi");
 const SESSIONS_DIR = join(PI_DIR, "sessions");
 const RATE_LOG     = join(PI_DIR, "rate-log.json");
@@ -19,6 +22,10 @@ const CAPS_FILE    = join(homedir(), ".claude", "caps.json");
 
 function ensureDirs(): void {
 	try { mkdirSync(SESSIONS_DIR, { recursive: true }); } catch {}
+	try { mkdirSync(STATUS_DIR, { recursive: true }); } catch {}
+	if (PANE_ID) {
+		try { writeFileSync(join(STATUS_DIR, `pane-${PANE_ID}.kind`), "pi"); } catch {}
+	}
 }
 
 function loadCaps(): Record<string, any> {
@@ -103,6 +110,7 @@ function writeState(ctx: any, rate: object | null): void {
 
 		writeFileSync(STATE_FILE, JSON.stringify({
 			pid:            process.pid,
+			pane:           PANE_ID,
 			model:          ctx.model?.id ?? "unknown",
 			thinking:       hasThinking ? "extended" : "",
 			ctx_pct:        ctxUsage?.percent ?? ctxUsage?.used_percentage ?? 0,
@@ -136,7 +144,7 @@ export default function (pi: ExtensionAPI) {
 
 		const child = spawn("python3", [
 			join(homedir(), ".config", "tmux", "ai-status.py"),
-			"write-pi", String(process.pid),
+			"write-pi", STATE_ID,
 		], { detached: true, stdio: "ignore" });
 		child.unref();
 	});
