@@ -91,16 +91,17 @@
         echo pi > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
       end
       docker run --rm -it \
-        --privileged \
+        --user (id -u):(id -g) \
+        -e HOME=/home/node \
         -e TMUX_AI_PANE=$tmux_ai_pane \
         -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
         -v (pwd):/work \
         -v /nix/store:/nix/store:ro \
-        -v $HOME/.pi/agent:/root/.pi/agent \
-        -v $HOME/.pi/sessions:/root/.pi/sessions \
-        -v $HOME/.pi/rate-log.json:/root/.pi/rate-log.json \
-        -v $HOME/.claude/caps.json:/root/.claude/caps.json:ro \
-        -v $HOME/.config/tmux:/root/.config/tmux:ro \
+        -v $HOME/.pi/agent:/home/node/.pi/agent \
+        -v $HOME/.pi/sessions:/home/node/.pi/sessions \
+        -v $HOME/.pi/rate-log.json:/home/node/.pi/rate-log.json \
+        -v $HOME/.claude/caps.json:/home/node/.claude/caps.json:ro \
+        -v $HOME/.config/tmux:/home/node/.config/tmux:ro \
         -v $tmux_ai_status_dir:$tmux_ai_status_dir \
         -w /work \
         pi-sandbox $argv
