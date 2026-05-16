@@ -114,8 +114,32 @@
       ai = "claude";
       tmr = "tmux source ~/.config/tmux/tmux.conf";
       apr = "systemctl --user restart wireplumber pipewire pipewire-pulse";
-      fsr = "source ~/.config/fish/config.fish";
     };
+    functions.fsr = ''
+      # Full fish session refresh: remove stale abbreviations and reload config + functions.
+      for name in (abbr --list)
+        abbr --erase $name 2>/dev/null
+      end
+
+      set -l function_files ~/.config/fish/functions/*.fish
+      for file in $function_files
+        set -l name (basename $file .fish)
+        if test "$name" != fsr
+          functions --erase $name 2>/dev/null
+        end
+      end
+
+      source ~/.config/fish/config.fish
+
+      for file in $function_files
+        set -l name (basename $file .fish)
+        if test "$name" != fsr
+          source $file
+        end
+      end
+
+      echo "Reloaded fish config, abbreviations, and functions"
+    '';
     functions.nr = ''
       set -l root (fd -H -t f '^\.nix-config$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
       bash -c "cd $root && bash rebuild.sh"
