@@ -44,20 +44,27 @@
         set tmux_ai_pane (tmux display-message -p '#{pane_id}' 2>/dev/null | string replace -a '%' "")
       end
       mkdir -p $tmux_ai_status_dir
+      touch $HOME/.claude.json
       if test -n "$tmux_ai_pane"
         echo claude > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
       end
-      docker run --rm -it \
-        -e TMUX_AI_PANE=$tmux_ai_pane \
-        -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
-        -v (pwd):/work \
-        -v /nix/store:/nix/store:ro \
-        -v $HOME/.claude:/root/.claude \
-        -v $HOME/.config/tmux:/root/.config/tmux:ro \
-        -v $tmux_ai_status_dir:$tmux_ai_status_dir \
-        -v $llm_logs:/root/llmthing-logs \
-        -w /work \
-        claude-sandbox $argv
+
+      set -l docker_args --rm -it
+      set -a docker_args --user (id -u):(id -g)
+      set -a docker_args -e HOME=/home/node
+      set -a docker_args -e TMUX_AI_PANE=$tmux_ai_pane
+      set -a docker_args -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir
+      set -a docker_args -v (pwd):/work
+      set -a docker_args -v /nix/store:/nix/store:ro
+      set -a docker_args -v $HOME/.claude:/home/node/.claude
+      set -a docker_args -v $HOME/.claude.json:/home/node/.claude.json
+      set -a docker_args -v $HOME/.config/tmux:/home/node/.config/tmux:ro
+      set -a docker_args -v $tmux_ai_status_dir:$tmux_ai_status_dir
+      if test -n "$llm_logs"
+        set -a docker_args -v $llm_logs:/home/node/llmthing-logs
+      end
+
+      docker run $docker_args -w /work claude-sandbox $argv
       set -l docker_status $status
       if test -n "$tmux_ai_pane"
         rm -f $tmux_ai_status_dir/pane-$tmux_ai_pane.kind $tmux_ai_status_dir/pane-$tmux_ai_pane.status

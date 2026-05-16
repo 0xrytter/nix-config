@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 RUN apk add --no-cache git tmux bash python3
-RUN mkdir -p /root/.config/tmux
+RUN mkdir -p /root/.config/tmux /home/node/.config/tmux && chown -R node:node /home/node/.config
 RUN npm install -g @anthropic-ai/claude-code
 WORKDIR /work
 ENTRYPOINT ["claude"]
