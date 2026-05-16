@@ -23,7 +23,7 @@
 
     set -g status 2
     set -g status-interval 5
-    set -g status-format[1] "#[align=left]#(bash ~/.config/tmux/ai-dispatch.sh #{pane_current_command} #{pane_pid} #{pane_id})"
+    set -g status-format[1] "#[align=left]#(bash ~/.config/tmux/ai-dispatch.sh #{pane_current_command} #{pane_pid})"
 
     bind-key p run-shell 'printf "%s" "#{pane_current_path}" | wl-copy' \; display-message "Copied cwd: #{pane_current_path}"
   '';

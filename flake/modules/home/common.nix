@@ -29,89 +29,6 @@
           ssh-add
       end
     '';
-    functions.claude = ''
-      if not docker image inspect claude-sandbox >/dev/null 2>&1
-        echo "Building claude-sandbox image..."
-        set -l ctx (mktemp -d)
-        cp (readlink -f ~/.config/claude-sandbox/Dockerfile) $ctx/Dockerfile
-        docker build -t claude-sandbox $ctx
-        rm -rf $ctx
-      end
-      set -l llm_logs (fd -H -t f '^\.llmthing-sessions$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
-      set -l tmux_ai_status_dir /tmp/tmux-ai
-      set -l tmux_ai_pane ""
-      if set -q TMUX
-        set tmux_ai_pane (tmux display-message -p '#{pane_id}' 2>/dev/null | string replace -a '%' "")
-      end
-      mkdir -p $tmux_ai_status_dir
-      touch $HOME/.claude.json
-      if test -n "$tmux_ai_pane"
-        echo claude > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
-      end
-
-      set -l docker_args --rm -it
-      set -a docker_args --user (id -u):(id -g)
-      set -a docker_args -e HOME=/home/node
-      set -a docker_args -e TMUX_AI_PANE=$tmux_ai_pane
-      set -a docker_args -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir
-      set -a docker_args -v (pwd):/work
-      set -a docker_args -v /nix/store:/nix/store:ro
-      set -a docker_args -v $HOME/.claude:/home/node/.claude
-      set -a docker_args -v $HOME/.claude.json:/home/node/.claude.json
-      set -a docker_args -v $HOME/.config/tmux:/home/node/.config/tmux:ro
-      set -a docker_args -v $tmux_ai_status_dir:$tmux_ai_status_dir
-      if test -n "$llm_logs"
-        set -a docker_args -v $llm_logs:/home/node/llmthing-logs
-      end
-
-      docker run $docker_args -w /work claude-sandbox $argv
-      set -l docker_status $status
-      if test -n "$tmux_ai_pane"
-        rm -f $tmux_ai_status_dir/pane-$tmux_ai_pane.kind $tmux_ai_status_dir/pane-$tmux_ai_pane.status
-      end
-      return $docker_status
-    '';
-    functions.pi = ''
-      if not docker image inspect pi-sandbox >/dev/null 2>&1
-        echo "Building pi-sandbox image..."
-        set -l ctx (mktemp -d)
-        cp (readlink -f ~/.config/pi-sandbox/Dockerfile) $ctx/Dockerfile
-        docker build -t pi-sandbox $ctx
-        rm -rf $ctx
-      end
-      set -l pi_start (date +%s)
-      set -l tmux_ai_status_dir /tmp/tmux-ai
-      set -l tmux_ai_pane ""
-      if set -q TMUX
-        set tmux_ai_pane (tmux display-message -p '#{pane_id}' 2>/dev/null | string replace -a '%' "")
-      end
-      mkdir -p $tmux_ai_status_dir $HOME/.pi/sessions
-      touch $HOME/.pi/rate-log.json
-      if test -n "$tmux_ai_pane"
-        echo pi > $tmux_ai_status_dir/pane-$tmux_ai_pane.kind
-      end
-      docker run --rm -it \
-        --user (id -u):(id -g) \
-        -e HOME=/home/node \
-        -e TMUX_AI_PANE=$tmux_ai_pane \
-        -e TMUX_AI_STATUS_DIR=$tmux_ai_status_dir \
-        -v (pwd):/work \
-        -v /nix/store:/nix/store:ro \
-        -v $HOME/.pi/agent:/home/node/.pi/agent \
-        -v $HOME/.pi/sessions:/home/node/.pi/sessions \
-        -v $HOME/.pi/rate-log.json:/home/node/.pi/rate-log.json \
-        -v $HOME/.claude/caps.json:/home/node/.claude/caps.json:ro \
-        -v $HOME/.config/tmux:/home/node/.config/tmux:ro \
-        -v $tmux_ai_status_dir:$tmux_ai_status_dir \
-        -w /work \
-        pi-sandbox $argv
-      set -l docker_status $status
-      python3 ~/.config/pi-sandbox/pi-log.py (pwd) $pi_start
-      if test -n "$tmux_ai_pane"
-        rm -f $tmux_ai_status_dir/pane-$tmux_ai_pane.kind $tmux_ai_status_dir/pane-$tmux_ai_pane.status $tmux_ai_status_dir/pi-status-$tmux_ai_pane.json
-      end
-      return $docker_status
-    '';
     shellAbbrs = {
       g = "git";
       ga = "git add";
@@ -325,10 +242,6 @@
   };
 
   home.file.".config/opencode/config.json".source = ../../config/opencode/config.json;
-
-  home.file.".config/pi-sandbox/Dockerfile".source = ../../config/pi-sandbox/Dockerfile;
-  home.file.".config/pi-sandbox/pi-log.py".source = ../../config/pi-sandbox/pi-log.py;
-  home.file.".config/claude-sandbox/Dockerfile".source = ../../config/claude-sandbox/Dockerfile;
 
   home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
   home.file.".pi/agent/extensions" = {
