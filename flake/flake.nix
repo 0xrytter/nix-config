@@ -43,6 +43,20 @@
       ];
       home-manager.users = users;
     };
+    mkHome = username: homeDirectory: userModule: home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.${system};
+      extraSpecialArgs = { inherit agents tmux-gruvbox; };
+      modules = [
+        nixvim.homeModules.nixvim
+        sops-nix.homeManagerModules.sops
+        stylix.homeModules.stylix
+        {
+          home.username = username;
+          home.homeDirectory = homeDirectory;
+        }
+        (import userModule)
+      ];
+    };
   in
   {
     homeConfigurations = {
@@ -56,6 +70,10 @@
           (import ./hosts/wsl2/home.nix)
         ];
       };
+
+      T480 = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
+      DIY-Desktop = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
+      patrick-desktop = mkHome "pallep" "/home/pallep" ./users/patrick/home.nix;
     };
 
     nixosConfigurations = {
