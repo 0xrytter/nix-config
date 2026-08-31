@@ -18,13 +18,17 @@
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     tmux-gruvbox = {
       url = "github:egel/tmux-gruvbox";
       flake = false;
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, tmux-gruvbox }:
+  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, sops-nix, tmux-gruvbox }:
   let
     system = "x86_64-linux";
     agents = llm-agents.packages.${system};
@@ -33,11 +37,27 @@
       home-manager.useUserPackages = true;
       home-manager.backupFileExtension = "hm-bak";
       home-manager.extraSpecialArgs = { inherit agents tmux-gruvbox; };
-      home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
+      home-manager.sharedModules = [
+        nixvim.homeModules.nixvim
+        sops-nix.homeManagerModules.sops
+      ];
       home-manager.users = users;
     };
   in
   {
+    homeConfigurations = {
+      wsl2 = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${system};
+        extraSpecialArgs = { inherit agents tmux-gruvbox; };
+        modules = [
+          nixvim.homeModules.nixvim
+          sops-nix.homeManagerModules.sops
+          stylix.homeModules.stylix
+          (import ./hosts/wsl2/home.nix)
+        ];
+      };
+    };
+
     nixosConfigurations = {
       DIY-Desktop = nixpkgs.lib.nixosSystem {
         inherit system;

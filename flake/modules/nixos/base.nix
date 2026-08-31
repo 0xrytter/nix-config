@@ -1,4 +1,18 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+let
+  wgnordTemplate = pkgs.writeText "wgnord-template.conf" ''
+    [Interface]
+    PrivateKey = PRIVKEY
+    Address = 10.5.0.2/32
+    DNS = 103.86.96.100, 103.86.99.100
+
+    [Peer]
+    PublicKey = SERVER_PUBKEY
+    AllowedIPs = 0.0.0.0/0, ::/0
+    Endpoint = SERVER_IP:51820
+    PersistentKeepalive = 25
+  '';
+in {
   nixpkgs.overlays = [
     (final: prev: {
       openldap = prev.openldap.overrideAttrs { doCheck = false; };
@@ -24,6 +38,12 @@
 
   networking.networkmanager.enable = true;
 
+  systemd.tmpfiles.rules = [
+    "d /var/lib/wgnord 0700 root root -"
+    "d /etc/wireguard 0700 root root -"
+    "C+ /var/lib/wgnord/template.conf 0600 root root - ${wgnordTemplate}"
+  ];
+
   programs.fish.enable = true;
   programs.nix-ld.enable = true;
   programs.appimage = {
@@ -46,6 +66,7 @@
     claude-code
     bitwarden-desktop
     git gh
+    wgnord
     wl-clipboard
     tmux neovim
     jetbrains.rider

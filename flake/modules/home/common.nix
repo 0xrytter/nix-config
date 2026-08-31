@@ -1,4 +1,4 @@
-{ pkgs, agents, tmux-gruvbox, ... }: {
+{ config, pkgs, agents, tmux-gruvbox, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -70,6 +70,22 @@
     functions.nr = ''
       set -l root (fd -H -t f '^\.nix-config$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
       bash -c "cd $root && bash rebuild.sh"
+    '';
+    functions.kqb = ''
+      pkill qbittorrent 2>/dev/null
+      rm -f ~/.config/qBittorrent/lockfile
+      rm -f ~/.config/qBittorrent/rss/storage.lock
+      rm -f ~/.local/share/qBittorrent/rss/articles/storage.lock
+      setsid -f qbittorrent >/tmp/qbittorrent-launch.log 2>&1
+      sleep 1
+
+      if pgrep -x qbittorrent >/dev/null
+        echo "qBittorrent restarted"
+      else
+        echo "qBittorrent did not stay running. See /tmp/qbittorrent-launch.log"
+        tail -20 /tmp/qbittorrent-launch.log 2>/dev/null
+        return 1
+      end
     '';
     functions.nu = ''
       set -l root (fd -H -t f '^\.nix-config$' ~ --max-results 1 2>/dev/null | xargs -I{} dirname {})
@@ -204,6 +220,8 @@
       { id = "mnjggcdmjocbbbhaepdhchncahnbgone"; } # SponsorBlock
       { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return YouTube Dislike
       { id = "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"; } # Privacy Badger
+      { id = "hlepfoohegkhhmjieoechaddaejaokhf"; } # Refined GitHub
+      { id = "pobhoodpcipjmedfenaigbeloiidbflp"; } # Minimal Theme for Twitter / X
     ];
   };
 
@@ -211,6 +229,8 @@
     enable = true;
     nix-direnv.enable = true;
   };
+
+  sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
 
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = {
@@ -241,8 +261,6 @@
     executable = true;
   };
 
-  home.file.".config/opencode/config.json".source = ../../config/opencode/config.json;
-
   home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
   home.file.".pi/agent/extensions" = {
     source = ../../config/pi-extensions;
@@ -253,6 +271,9 @@
     fd
     ripgrep
     sesh
+    age
+    sops
+    ssh-to-age
     # AI coding agents
     agents.opencode
     agents.pi

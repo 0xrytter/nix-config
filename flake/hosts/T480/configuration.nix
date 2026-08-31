@@ -11,6 +11,10 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # T480 / Intel iGPU: Panel Self Refresh is a common cause of rare
+  # flickering, horizontal artifacts, and black-screen issues on the built-in panel.
+  boot.kernelParams = [ "i915.enable_psr=0" ];
+
   nix.gc = {
     automatic = true;
     dates = "weekly";

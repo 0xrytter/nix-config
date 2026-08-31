@@ -1,7 +1,11 @@
-{ config, lib, pkgs, ... }: {
+{ config, lib, ... }:
+{
+  home.username = "rytter";
+  home.homeDirectory = "/home/rytter";
+  home.stateVersion = "24.05";
+
   imports = [
-    ../../modules/home/common.nix
-    ../../modules/home/neovim.nix
+    ../../modules/home/wsl2.nix
   ];
 
   programs.git.settings.user = {
@@ -25,7 +29,7 @@
     set -g status-interval 5
     set -g status-format[1] "#[align=left]#(bash ~/.config/tmux/ai-dispatch.sh #{pane_current_command} #{pane_pid})"
 
-    bind-key p run-shell 'printf "%s" "#{pane_current_path}" | wl-copy' \; display-message "Copied cwd: #{pane_current_path}"
+    bind-key p run-shell 'printf "%s" "#{pane_current_path}" | clip.exe' \; display-message "Copied cwd: #{pane_current_path}"
   '';
 
   programs.fish.functions.dt = ''
@@ -63,6 +67,4 @@
     $DRY_RUN_CMD mkdir -p ${config.xdg.configHome}/opencode/secrets
     $DRY_RUN_CMD chmod 700 ${config.xdg.configHome}/opencode/secrets
   '';
-
-  home.stateVersion = "24.05";
 }
