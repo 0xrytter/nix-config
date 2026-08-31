@@ -31,40 +31,40 @@ config.wsl_domains = wsl_domains
 config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 18.0
 
--- Same colors as your Alacritty config
+-- Gruvbox dark, medium (base16) - matches the stylix-theme on your NixOS hosts
 config.colors = {
-  foreground = "#cdd6f4",
-  background = "#1e1e2e",
+  foreground = "#d5c4a1",
+  background = "#282828",
 
-  cursor_bg = "#f5e0dc",
-  cursor_fg = "#1e1e2e",
-  cursor_border = "#f5e0dc",
+  cursor_bg = "#d5c4a1",
+  cursor_fg = "#282828",
+  cursor_border = "#d5c4a1",
 
   ansi = {
-    "#45475a",
-    "#f38ba8",
-    "#a6e3a1",
-    "#f9e2af",
-    "#89b4fa",
-    "#f5c2e7",
-    "#94e2d5",
-    "#bac2de",
+    "#282828",
+    "#fb4934",
+    "#b8bb26",
+    "#fabd2f",
+    "#83a598",
+    "#d3869b",
+    "#8ec07c",
+    "#d5c4a1",
   },
 
   brights = {
-    "#585b70",
-    "#f38ba8",
-    "#a6e3a1",
-    "#f9e2af",
-    "#89b4fa",
-    "#f5c2e7",
-    "#94e2d5",
-    "#a6adc8",
+    "#665c54",
+    "#fb4934",
+    "#b8bb26",
+    "#fabd2f",
+    "#83a598",
+    "#d3869b",
+    "#8ec07c",
+    "#fbf1c7",
   },
 
   indexed = {
-    [16] = "#fab387",
-    [17] = "#f5e0dc",
+    [16] = "#fe8019",
+    [17] = "#d65d0e",
   },
 }
 

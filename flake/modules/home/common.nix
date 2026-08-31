@@ -128,6 +128,7 @@
       }
     ];
     extraConfig = ''
+      set -g default-shell "${pkgs.fish}/bin/fish"
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g update-environment "SSH_AUTH_SOCK"
       set -g history-limit 50000

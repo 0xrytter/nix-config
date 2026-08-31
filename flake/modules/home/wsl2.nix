@@ -32,6 +32,22 @@
   # Nerd fonts + fontconfig so Windows Terminal / VS Code can pick them up.
   fonts.fontconfig.enable = true;
 
+  # Ubuntu's nix install only puts the nix bin dirs on PATH for bash login
+  # shells(/etc/profile.d/nix.sh). When fish is the shell (WSL login or a tmux
+  # default-shell pane) that never runs, so nix-installed tools like zoxide/nvim
+  # become "not found". Ensure the nix user + default profile bins are always on
+  # PATH inside fish. conf.d runs before config.fish, i.e. before hm-session-vars.
+  xdg.configFile."fish/conf.d/10-nix-path.fish".text = ''
+    set -l nix_link "$HOME/.nix-profile"
+    if test -e "$nix_link/bin"
+      if type -q fish_add_path
+        fish_add_path --prepend --move "$nix_link/bin" "/nix/var/nix/profiles/default/bin"
+      else
+        set -gx PATH "$nix_link/bin" "/nix/var/nix/profiles/default/bin" $PATH
+      end
+    end
+  '';
+
   home.packages = with pkgs; [
     git
     gh
