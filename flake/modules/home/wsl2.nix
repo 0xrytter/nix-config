@@ -55,5 +55,18 @@
     lazydocker
     docker-compose
     nerd-fonts.jetbrains-mono
+    # Browser handoff for headless WSL: `xdg-open` (via xdg-utils) honours
+# $BROWSER and our tiny `wslview` opens the URL with the Windows browser, so
+# CLI login flows (flyctl auth login, gh, ...) complete normally.
+    xdg-utils
+    (pkgs.writeShellScriptBin "wslview" ''
+      url="''${1:-}"
+      if [ -n "$url" ]; then
+        cmd.exe /c start ''' "$url" >/dev/null 2>&1 &
+      fi
+    '')
   ];
+
+  # Point xdg-open's $BROWSER at wslview so login flows open on Windows.
+  home.sessionVariables.BROWSER = "wslview";
 }
