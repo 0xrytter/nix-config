@@ -2,6 +2,7 @@
   imports = [
     ../../modules/home/common.nix
     ../../modules/home/neovim.nix
+    ../../modules/home/opencode.nix
   ];
 
   programs.git.settings.user = {
@@ -37,6 +38,8 @@
     cd (fd -H -t f ".$argv[1]" ~ --max-results 1 | xargs dirname)
   '';
 
+  # transitional: superseded by the generic `ocgo N` from modules/home/opencode.nix.
+  # Remove once the new system is confirmed working.
   programs.fish.functions.ocgo1 = ''
     set -lx OPENCODE_CONFIG ${config.xdg.configHome}/opencode/profiles/go-workspace-1.json
     opencode $argv
@@ -45,23 +48,6 @@
   programs.fish.functions.ocgo2 = ''
     set -lx OPENCODE_CONFIG ${config.xdg.configHome}/opencode/profiles/go-workspace-2.json
     opencode $argv
-  '';
-
-  xdg.configFile."opencode/profiles/go-workspace-1.json".text = builtins.toJSON {
-    "$schema" = "https://opencode.ai/config.json";
-    model = "opencode-go/qwen3.8-flash";
-    provider.opencode-go.options.apiKey = "{file:${config.xdg.configHome}/opencode/secrets/go-workspace-1.key}";
-  };
-
-  xdg.configFile."opencode/profiles/go-workspace-2.json".text = builtins.toJSON {
-    "$schema" = "https://opencode.ai/config.json";
-    model = "opencode-go/qwen3.8-flash";
-    provider.opencode-go.options.apiKey = "{file:${config.xdg.configHome}/opencode/secrets/go-workspace-2.key}";
-  };
-
-  home.activation.createOpencodeGoSecretDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD mkdir -p ${config.xdg.configHome}/opencode/secrets
-    $DRY_RUN_CMD chmod 700 ${config.xdg.configHome}/opencode/secrets
   '';
 
   home.stateVersion = "24.05";

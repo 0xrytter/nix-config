@@ -275,6 +275,7 @@
     age
     sops
     ssh-to-age
+    wl-clipboard
     # AI coding agents
     agents.opencode
     agents.pi
