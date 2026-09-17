@@ -99,13 +99,16 @@
           capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
         '';
         servers = {
-          svelte.enable = true;
           elixirls.enable = true;
           ts_ls.enable = true;
           eslint.enable = true;
           bashls.enable = true;
           html.enable = true;
           pyright.enable = true;
+          ruff.enable = true;
+          gopls.enable = true;
+          jsonls.enable = true;
+          cssls.enable = true;
           dockerls.enable = true;
           docker_compose_language_service.enable = true;
           tailwindcss.enable = true;
@@ -162,10 +165,13 @@
           formatters_by_ft = {
             lua = [ "stylua" ];
             elixir = [ "lsp" ];
-            heex = [ "lsp" ];
-            cs = [ "csharpier" ];
-            javascript = [ "prettierd" ];
-            typescript = [ "prettierd" ];
+            go = [ "gofumpt" ];
+            python = [ "ruff" ];
+            nix = [ "nixfmt" ];
+            sh = [ "shfmt" ];
+            json = [ "prettierd" ];
+            markdown = [ "prettierd" ];
+            css = [ "prettierd" ];
           };
         };
       };
@@ -180,8 +186,8 @@
           auto_install = true;
           ensure_installed = [
             "bash" "c" "diff" "html" "lua" "luadoc" "markdown" "markdown_inline"
-            "query" "vim" "vimdoc" "elixir" "heex" "svelte" "c_sharp"
-            "tsx" "typescript" "javascript"
+            "query" "vim" "vimdoc" "elixir" "heex" "go" "python" "css" "json"
+            "nix" "tsx" "typescript" "javascript"
           ];
         };
       };
@@ -266,6 +272,15 @@
       nvim-ts-autotag
       nvim-web-devicons
       baleia-nvim
+    ];
+
+    # Formatter binaries for conform + the tools some LSPs shell out to.
+    # LSP servers themselves are packaged by nixvim via the `servers` block.
+    extraPackages = with pkgs; [
+      gofumpt
+      ruff
+      nixfmt-rfc-style
+      shfmt
     ];
 
     extraConfigLua = ''

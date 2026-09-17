@@ -32,6 +32,11 @@
   let
     system = "x86_64-linux";
     agents = llm-agents.packages.${system};
+    # crush is FSL-1.1-MIT (unfree); allow just it, not all unfree packages.
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfreePredicate = pkg: (nixpkgs.lib.getName pkg) == "crush";
+    };
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
@@ -61,7 +66,7 @@
   {
     homeConfigurations = {
       wsl2 = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = pkgs;
         extraSpecialArgs = { inherit agents tmux-gruvbox; };
         modules = [
           nixvim.homeModules.nixvim

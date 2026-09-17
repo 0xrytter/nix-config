@@ -45,11 +45,68 @@ let
           "{file:${config.xdg.configHome}/opencode/secrets/${ws n}.key}";
         local = localProvider;
       };
+      permission = {
+        read = "ask";
+        bash = {
+          "sops *" = "deny";
+          "*sops*" = "deny";
+          "*age/keys.txt*" = "deny";
+          "*sops/age/keys.txt*" = "deny";
+          "aws --endpoint-url*" = "ask";
+          "cat /var/lib/leagueos/.env" = "deny";
+          "*leagueos.enc.yaml*" = "ask";
+        };
+        # Deny by default unless explicitly allowed — secrets stay out of the
+        # session unless the user makes a deliberate exception.
+        external_directory = {
+          "~/.config/sops/**" = "deny";
+          "~/.config/leagueos/**" = "deny";
+          "~/.sops/**" = "deny";
+          "/var/lib/leagueos/**" = "deny";
+          "**/secrets/**" = "ask";
+        };
+      };
     };
   }) ids;
+
+  # Crush (charmbracelet TUI harness) reuses the same opencode-go workspace
+  # keys; OPENCODE_API_KEY is its env var for the OpenCode Zen & Go provider.
+  # Generated shorthands occgo1..occgoN mirror the generic `occgo N`, written
+  # as fish function files since programs.fish.functions keys must be static.
+  occgoShorthand = n: lib.nameValuePair "fish/functions/occgo${toString n}.fish" {
+    text = ''
+      function occgo${toString n} --description "crush on go-workspace-${toString n}"
+        if not test -f ${cfgBase}/secrets/go-workspace-${toString n}.key
+          echo "no key for workspace: ${toString n}"
+          return 1
+        end
+        set -lx OPENCODE_API_KEY (cat ${cfgBase}/secrets/go-workspace-${toString n}.key)
+        crush $argv
+      end
+    '';
+  };
+
+  crushShorthands = map occgoShorthand ids;
+
+  # Static crush config so it rides the home-manager declaration — the session
+  # header is a stable identifier, regenerated only deliberately, not on
+  # rebuilds. Headers are per-provider in crush, so they ride the opencode-go
+  # provider entry (matches OPENCODE_API_KEY auth in occurrence.sh functions).
+  crushConfig = lib.nameValuePair "crush/crush.json" {
+    text = builtins.toJSON {
+      "$schema" = "https://charm.land/crush.json";
+      providers = {
+        "opencode-go" = {
+          extra_headers = {
+            "x-opencode-session" = "94b0447f-a5b3-47c2-bc8d-853148b17a3e";
+          };
+        };
+      };
+    };
+  };
 in {
   # Applies to every opencode invocation (all workspace profiles).
-  xdg.configFile = lib.listToAttrs profiles // {
+  xdg.configFile = lib.listToAttrs (profiles ++ crushShorthands ++ [ crushConfig ]) // {
     # Global config — always-on ruleset (agent-rules.md: concise comms, Nix
     # env, lazy-senior-dev code discipline, tests, types, language tree).
     # Plain markdown, no plugin, travels to any harness.
@@ -73,6 +130,7 @@ in {
 
   home.packages = [
     graphify
+    pkgs.crush
   ];
 
   programs.fish.functions.ocgo = ''
@@ -90,6 +148,28 @@ in {
     end
     set -lx OPENCODE_CONFIG $prof
     opencode $argv[2..-1]
+  '';
+
+  # Crush (charmbracelet TUI harness) reuses the same opencode-go workspace
+  # keys; OPENCODE_API_KEY is its env var for the OpenCode Zen & Go provider.
+  # Generated shorthands occgo1..occgoN mirror the generic `occgo N`, kept as
+  # generated fish function files (occgo1..occgoN via crushShorthands).
+
+  programs.fish.functions.occgo = ''
+    set -l n $argv[1]
+    if test -z "$n"
+      echo "usage: occgo <N>"
+      echo "available:" (ls ${cfgBase}/profiles)
+      return 1
+    end
+    set -l key ${cfgBase}/secrets/go-workspace-$n.key
+    if not test -f $key
+      echo "no key for workspace: $n"
+      echo "available:" (ls ${cfgBase}/profiles)
+      return 1
+    end
+    set -lx OPENCODE_API_KEY (cat $key)
+    crush $argv[2..-1]
   '';
 
   programs.fish.functions.ocgolist = ''

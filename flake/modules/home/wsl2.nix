@@ -54,6 +54,7 @@
     lazygit
     lazydocker
     docker-compose
+    bubblewrap
     nerd-fonts.jetbrains-mono
     # Browser handoff for headless WSL: `xdg-open` (via xdg-utils) honours
 # $BROWSER and our tiny `wslview` opens the URL with the Windows browser, so
