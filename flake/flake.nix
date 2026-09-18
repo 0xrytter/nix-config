@@ -22,13 +22,9 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    tmux-gruvbox = {
-      url = "github:egel/tmux-gruvbox";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, sops-nix, tmux-gruvbox }:
+  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, sops-nix }:
   let
     system = "x86_64-linux";
     agents = llm-agents.packages.${system};
@@ -41,7 +37,7 @@
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.backupFileExtension = "hm-bak";
-      home-manager.extraSpecialArgs = { inherit agents tmux-gruvbox; };
+      home-manager.extraSpecialArgs = { inherit agents; };
       home-manager.sharedModules = [
         nixvim.homeModules.nixvim
         sops-nix.homeManagerModules.sops
@@ -50,7 +46,7 @@
     };
     mkHome = username: homeDirectory: userModule: home-manager.lib.homeManagerConfiguration {
       pkgs = nixpkgs.legacyPackages.${system};
-      extraSpecialArgs = { inherit agents tmux-gruvbox; };
+      extraSpecialArgs = { inherit agents; };
       modules = [
         nixvim.homeModules.nixvim
         sops-nix.homeManagerModules.sops
@@ -67,7 +63,7 @@
     homeConfigurations = {
       wsl2 = home-manager.lib.homeManagerConfiguration {
         pkgs = pkgs;
-        extraSpecialArgs = { inherit agents tmux-gruvbox; };
+        extraSpecialArgs = { inherit agents; };
         modules = [
           nixvim.homeModules.nixvim
           sops-nix.homeManagerModules.sops

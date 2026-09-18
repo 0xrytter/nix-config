@@ -56,7 +56,7 @@
       }
     ];
 
-    colorschemes.gruvbox = {
+    colorschemes.catppuccin = {
       enable = true;
     };
 

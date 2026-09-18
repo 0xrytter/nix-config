@@ -1,4 +1,4 @@
-{ config, pkgs, agents, tmux-gruvbox, ... }: {
+{ config, pkgs, agents, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -39,7 +39,6 @@
       ld = "lazydocker";
       nd = "nix develop";
       ai = "claude";
-      tmr = "tmux source ~/.config/tmux/tmux.conf";
       apr = "systemctl --user restart wireplumber pipewire pipewire-pulse";
     };
     functions.fsr = ''
@@ -95,81 +94,6 @@
 
   programs.starship.enable = true;
 
-  programs.tmux = {
-    enable = true;
-    prefix = "C-Space";
-    baseIndex = 1;
-    mouse = true;
-    keyMode = "vi";
-    terminal = "xterm-256color";
-    plugins = with pkgs.tmuxPlugins; [
-      sensible
-      vim-tmux-navigator
-      yank
-      resurrect
-      {
-        plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
-          pluginName = "tmux-gruvbox";
-          rtpFilePath = "gruvbox-tpm.tmux";
-          version = "master";
-          src = tmux-gruvbox;
-        };
-        extraConfig = ''
-          set -g @tmux-gruvbox "dark"
-          set -g @tmux-gruvbox-right-status-z "#h "
-          set -g @tmux-gruvbox-right-status-x "#(date '+%H:%M') "
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-save-interval '5'
-        '';
-      }
-    ];
-    extraConfig = ''
-      set -g default-shell "${pkgs.fish}/bin/fish"
-      set-option -sa terminal-overrides ",xterm*:Tc"
-      set-option -g update-environment "SSH_AUTH_SOCK"
-      set -g history-limit 50000
-      run-shell "${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
-
-      set -g automatic-rename on
-      set -g automatic-rename-format "#{b:pane_current_path}"
-
-      bind h select-pane -L
-      bind j select-pane -D
-      bind k select-pane -U
-      bind l select-pane -R
-
-      set -g pane-base-index 1
-      set-window-option -g pane-base-index 1
-      set-option -g renumber-windows on
-
-      bind -n M-Left select-pane -L
-      bind -n M-Right select-pane -R
-      bind -n M-Up select-pane -U
-      bind -n M-Down select-pane -D
-
-      bind -n S-Left previous-window
-      bind -n S-Right next-window
-      bind -n M-H previous-window
-      bind -n M-L next-window
-
-      bind-key -T copy-mode-vi v send-keys -X begin-selection
-      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
-      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
-
-      bind '"' split-window -v -c "#{pane_current_path}"
-      bind % split-window -h -c "#{pane_current_path}"
-      bind c new-window -c "#{pane_current_path}"
-
-      bind-key s display-popup -E -w 80% -h 80% 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
-      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; tmux kill-window -t scratch 2>/dev/null; tmux new-window -n scratch "nvim -n + /tmp/tmux-scrollback-#{session_id}"; fi'
-
-      set-hook -g after-select-pane 'refresh-client -S'
-    '';
-  };
 
   programs.alacritty = {
     enable = true;
@@ -188,7 +112,6 @@
         bindings = [{ action = "PasteSelection"; mouse = "Middle"; }];
       };
       selection.semantic_escape_chars = ",│`|:\"' ()[]{}<>";
-      terminal.shell.program = "/run/current-system/sw/bin/tmux";
       window = {
         decorations = "full";
         dynamic_title = true;
@@ -256,17 +179,6 @@
   home.file.".claude/settings.json".source = ../../config/claude-settings.json;
   home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
   home.file.".claude/caps.json".source = ../../config/caps.json;
-  home.file.".config/tmux/ai-status.py".source = ../../config/tmux/ai-status.py;
-  home.file.".config/tmux/ai-dispatch.sh" = {
-    source = ../../config/tmux/ai-dispatch.sh;
-    executable = true;
-  };
-
-  home.file.".pi/agent/themes/gruvbox.json".source = ../../config/pi-gruvbox.json;
-  home.file.".pi/agent/extensions" = {
-    source = ../../config/pi-extensions;
-    recursive = true;
-  };
 
   home.packages = with pkgs; [
     fd
@@ -278,7 +190,6 @@
     wl-clipboard
     # AI coding agents
     agents.opencode
-    agents.pi
     t3code
     # formatters for neovim/conform
     stylua

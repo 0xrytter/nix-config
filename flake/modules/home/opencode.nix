@@ -102,11 +102,30 @@ let
           };
         };
       };
+      # Same ruleset as opencode: agent-rules.md as session context, plus a
+      # PreToolUse hook that denies sops/age/leagueos access (mirrors the
+      # opencode permission profile; opencode has no hook equivalent in crush,
+      # and crush permissions have no command-pattern denies, so a hook is the
+      # mechanism that makes banned calls literally fail).
+      hooks.PreToolUse = [
+        {
+          matcher = "^(bash|edit|write|multiedit|view)$";
+          command = "${config.xdg.configHome}/crush/hooks/protect-secrets.sh";
+        }
+      ];
+      options.context_paths = [
+        "${config.xdg.configHome}/crush/agent-rules.md"
+      ];
     };
+  };
+
+  crushHook = lib.nameValuePair "crush/hooks/protect-secrets.sh" {
+    text = builtins.readFile ../../config/crush-hooks/protect-secrets.sh;
+    executable = true;
   };
 in {
   # Applies to every opencode invocation (all workspace profiles).
-  xdg.configFile = lib.listToAttrs (profiles ++ crushShorthands ++ [ crushConfig ]) // {
+  xdg.configFile = lib.listToAttrs (profiles ++ crushShorthands ++ [ crushConfig crushHook ]) // {
     # Global config — always-on ruleset (agent-rules.md: concise comms, Nix
     # env, lazy-senior-dev code discipline, tests, types, language tree).
     # Plain markdown, no plugin, travels to any harness.
@@ -115,6 +134,8 @@ in {
       instructions = [ "${config.xdg.configHome}/opencode/agent-rules.md" ];
     };
     "opencode/agent-rules.md".source = ../../config/agent-rules.md;
+    # Crush mirror of the same ruleset (loaded via crush.json context_paths).
+    "crush/agent-rules.md".source = ../../config/agent-rules.md;
     "opencode/tui.json".text = builtins.toJSON {
       "$schema" = "https://opencode.ai/tui.json";
       attention = {
@@ -170,6 +191,16 @@ in {
     end
     set -lx OPENCODE_API_KEY (cat $key)
     crush $argv[2..-1]
+  '';
+
+  # Crush writes OSC 12 (cursor colour) and OSC 11 (background) but only undoes
+  # the cursor colour when its last rendered frame still had a themed cursor
+  # (bubbletea/v2 cursed_renderer.go), and tmux replays a pane's remembered
+  # colour every time that pane is active. Scrub on the way out so crush only
+  # themes its own pane, and only while it is running. Root fix is upstream.
+  programs.fish.functions.crush = ''
+    command crush $argv
+    printf '\e]112\a\e]111\a'
   '';
 
   programs.fish.functions.ocgolist = ''

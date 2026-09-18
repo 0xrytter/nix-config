@@ -1,5 +1,19 @@
 { config, lib, pkgs, ... }:
-{
+let
+  # zellij 0.44.2 is what the pinned nixpkgs (2026-05-06) ships, and its
+  # renderer is measurably why nvim scrolling drags under it — a bare WezTerm
+  # pane with the same nvim is smooth. Pull just this package from a current
+  # rev, the same single-package pattern opencode.nix uses for graphify: a
+  # whole-lock bump has broken things before (fish completions) and is a much
+  # bigger change than this needs. Delete this block and go back to `zellij`
+  # if a newer renderer turns out not to help.
+  zellijNixpkgs = import (builtins.fetchTree {
+    type = "github";
+    owner = "NixOS";
+    repo = "nixpkgs";
+    rev = "a32edd7654519351e48e80372a928df336394670";
+  }) { system = pkgs.system; };
+in {
   imports = [
     ./common.nix
     ./neovim.nix
@@ -48,7 +62,25 @@
     end
   '';
 
+  # Terminal multiplexer. Catppuccin ships inside Zellij (theme "catppuccin-mocha"
+  # selects it) and session persistence is built in rather than plugin-based:
+  # serialization is Zellij's resurrect/continuum equivalent, so neither TPM nor
+  # those plugins carry over.
+  # WezTerm (Windows side) is themed by hand in wsl2/wezterm.lua — stylix cannot
+  # reach it, and stylix is only enabled for the NixOS hosts in any case.
+  xdg.configFile."zellij/config.kdl".text = ''
+    theme "catppuccin-mocha"
+
+    // Session persistence — the cheap half only. Viewport serialization is off
+    // by default upstream, and enabling it copies up to `scrollback_lines_to_serialize`
+    // lines per pane on every serialization tick, which shows up as interactive
+    // stutter (nvim scrolling especially). Layout + commands are what recovery
+    // actually needs. (Requires restart to change.)
+    session_serialization true
+  '';
+
   home.packages = with pkgs; [
+    zellijNixpkgs.zellij
     git
     gh
     lazygit

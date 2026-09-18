@@ -19,6 +19,19 @@ The rules for working in and on this user's systems. They are written for an
 AI coding agent, but they encode the way the user works with any tool. Read
 them in full when a session starts; they shape every decision below.
 
+### Keep the user's hands on the code
+
+Skill is the asset; a diff is not. Past the size where a task fits in one head,
+supervision replaces practice — so split the work by whose hands it needs:
+
+- Name the slice before starting. Reconnaissance, interfaces and call-site lists
+  are yours; the first implementation, the design decision, and the code the
+  user wanted to have written are theirs.
+- Work whose decision is already made and that is only mechanical (a rename
+  across call sites, regenerating an artifact, doc edits) is yours.
+- Asked to implement something large, offer the split first instead of
+  delivering it whole — the understanding is the part that compounds.
+
 ## How to communicate
 
 - Be clear and concise. If more context is needed, the user will ask. Assume
