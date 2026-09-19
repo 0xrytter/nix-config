@@ -115,11 +115,9 @@ Rules:
   fails and fix that — the route must be stable, not re-added. A reboot or a
   periodic reminder that papers over a fault is debt, not a fix.
 
-Never cut, in the name of laziness: understanding the problem fully, input
-validation at trust boundaries, error handling that prevents data loss,
-security, accessibility, the calibration real hardware needs (the platform is
-never the spec ideal — a clock drifts, a sensor reads off), or anything
-explicitly requested.
+Never cut, in the name of laziness: understanding the problem fully, accessibility,
+the calibration real hardware needs (the platform is never the spec ideal — a clock
+drifts, a sensor reads off), or anything explicitly requested.
 
 ## Bug fixes — root cause, not symptom
 
@@ -146,6 +144,48 @@ documentation and future refactoring, not box-ticking.
 Static types are not optional when the language provides them (natively or
 optionally). Like tests, they lock in and document the desired behaviour.
 
+## Permissions — deny by default, at the boundary
+
+Authorization is decided where trust changes, not sprinkled along the call path.
+Deny by default and grant explicitly. One credential per capability, carrying the
+least it needs; never one identity serving two purposes. Never widen a permission
+to make a test pass, and never disable a check to make a demo work.
+
+## Validation — parse at the edge, trust inside
+
+Validate where untrusted input enters, then pass a value that can only be valid
+inward. Reject rather than repair: silently cleaning input hides the caller's bug
+and moves it downstream. A value arriving in the core unvalidated is a bug at the
+boundary, not a reason for a second check in the middle.
+
+## Error handling — fail loud, never swallow
+
+An error is either handled or propagated. Never discarded, never caught and
+ignored. Handle it where you can act on it; otherwise let it surface with its
+context intact. Errors that prevent data loss are never traded for convenience.
+
+## Logging — structured, and never a secret
+
+Structured key/value, not interpolated prose. Log at boundaries: what came in,
+what went out, what failed, and the identifier that correlates it. A line nobody
+can tie to a request is noise. Never log secrets, tokens, or whole payloads;
+redact where the data crosses a trust boundary, which is where it becomes someone
+else's to read.
+
+## Backups — an untested restore is not a backup
+
+Off-site, or it is not a backup: same disk, same host, same failure domain is not
+a second copy. Restore is run, not assumed. Back up the state, not just the
+directory: a database dump, not its files. Retention and encryption stated, not
+implied. Storage cost with no tested restore is a false sense of safety.
+
+## Observability — if it can fail silently, something outside must notice (open)
+
+A failure nobody can see is not handled. Anything that dies quietly needs a
+watcher that outlives it: mutual monitoring cannot cover a common-mode failure,
+so the watcher lives outside the thing it watches. Open: what a service owes in
+metrics, logs, and errors is still forming, so do not invent a standard here.
+
 ## Database discipline — the schema is the foundation
 
 The database is not an arbitrary service behind an API. It is a first-class
@@ -153,6 +193,8 @@ citizen and deserves to be treated as such: proper schemas are the foundation
 for long-term maintainability.
 
 - Always normalize tables, and ensure indexes exist where queries need them.
+- Migrations are forward-only and reversible; the rollback is planned before the
+  migration ships.
 - Integer identifiers, never string values as identifiers.
 - Use enums for closed vocabularies; use lookup tables as the default answer
   to values with limited meaning. Don't encode random string values on rows —
@@ -246,6 +288,19 @@ failure exist and both lose to the registry:
   accepting a deep dependency tree for a small feature (npm-style). New
   dependencies get a quick cost check: what does it pull in, what does it
   solve, is the solve bigger than the import.
+
+## Before you ship
+
+Run this against any component before calling it done. Each line has a home
+above; `open` means unsettled, so do not invent a standard there.
+
+- Does the boundary deny by default, and does every credential carry only what it needs?
+- Is untrusted input parsed at the edge, and trusted only after it is a type?
+- Is every error handled or propagated, none swallowed?
+- Is every log line structured, correlatable, and free of secrets?
+- Does the backup leave the failure domain, and has a restore actually been run?
+- Is the schema normalized, indexed for the queries it serves, and the migration reversible?
+- If this dies silently, who notices? (open)
 
 ## The point
 
