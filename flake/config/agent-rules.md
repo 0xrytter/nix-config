@@ -125,6 +125,23 @@ A bug report names a symptom. Grep every caller of the function you touch and
 fix the shared function once — one guard there is a smaller diff than one per
 caller. Patching only the path the ticket names leaves a sibling caller broken.
 
+## Commits — one per step, as a safety net
+
+Commit as the work progresses, not once at the end. A commit is a checkpoint:
+it makes a wrong turn cost one step instead of the whole task, and it lets you
+revert and retry from a different angle instead of unpicking by hand.
+
+- One logical step per commit, and each one builds and tests clean. A
+  checkpoint that does not build is not a fallback.
+- Commit before starting something risky, not after it works: the fallback has
+  to exist before it is needed. Never let uncommitted work pile up across
+  several steps.
+- Small enough to revert, complete enough to mean something. Not one commit per
+  file edit, and not one for the whole task.
+- Making these commits is standing permission: commit unprompted as the work
+  happens, rather than waiting to be asked. Pushing stays gated — local
+  checkpoints are yours to make, the remote is not.
+
 ## Tests — mandatory, as documentation, not ceremony
 
 Unit and integration tests are not optional. A behaviour that can be tested and
