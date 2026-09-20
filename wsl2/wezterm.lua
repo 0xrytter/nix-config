@@ -10,13 +10,11 @@ config.window_close_confirmation = "NeverPrompt"
 -- Go directly into Ubuntu WSL
 config.default_domain = "WSL:Ubuntu-24.04"
 
--- Boot Zellij instead of tmux.
+-- Boot tmux. The tmux config (Catppuccin status bar, OSC 52 clipboard) lives in
+-- flake/modules/home/common.nix; zellij stays installed but is not the default.
 --  * Via a login shell with an absolute path: WezTerm's WSL domain inherits the
 --    distro PATH, which has no nix profile, so a bare name resolves to
 --    /usr/bin and the login shell is what restores the profile.
---  * Zellij's config and package are declared in flake/modules/home/wsl2.nix.
---  * tmux stays installed and configured; to go back, swap this exec line for
---    "/home/rytter/.nix-profile/bin/tmux new-session -A -s main".
 local wsl_domains = wezterm.default_wsl_domains()
 
 for _, domain in ipairs(wsl_domains) do
@@ -24,7 +22,7 @@ for _, domain in ipairs(wsl_domains) do
     domain.default_prog = {
       "/bin/bash",
       "-lc",
-      "exec /home/rytter/.nix-profile/bin/zellij",
+      "exec /home/rytter/.nix-profile/bin/tmux new-session -A -s main",
     }
   end
 end
@@ -35,47 +33,16 @@ config.wsl_domains = wsl_domains
 config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 15.0
 
--- Catppuccin Mocha, mapped the same way the gruvbox block was: base00
--- background, base05 text, base08/0B/0A/0D/0E/0C in ANSI slots 1-6, base03 and
--- base07 for bright black/white. Values taken from
--- base16-schemes/share/themes/catppuccin-mocha.yaml — stylix themes the NixOS
--- hosts only and cannot reach a Windows-side WezTerm, so this file stays the
--- source of truth for the terminal palette.
-config.colors = {
-  foreground = "#cdd6f4",
-  background = "#1e1e2e",
-
-  cursor_bg = "#cdd6f4",
-  cursor_fg = "#1e1e2e",
-  cursor_border = "#cdd6f4",
-
-  ansi = {
-    "#1e1e2e",
-    "#f38ba8",
-    "#a6e3a1",
-    "#f9e2af",
-    "#89b4fa",
-    "#cba6f7",
-    "#94e2d5",
-    "#cdd6f4",
-  },
-
-  brights = {
-    "#6c7086",
-    "#f38ba8",
-    "#a6e3a1",
-    "#f9e2af",
-    "#89b4fa",
-    "#cba6f7",
-    "#94e2d5",
-    "#b4befe",
-  },
-
-  indexed = {
-    [16] = "#fab387",
-    [17] = "#f2cdcd",
-  },
-}
+-- Catppuccin Mocha, by name. WezTerm ships the upstream catppuccin/wezterm
+-- port as a built-in scheme (origin_url https://github.com/catppuccin/wezterm),
+-- so the palette is the project's own, not a re-typed approximation. Mocha is
+-- Catppuccin's dark flavour (latte is the light one, frappe/macchiato sit in
+-- between). The hand-mapped base16 version that used to live here was wrong in
+-- visible ways: ANSI black was the background (#1e1e2e), so dim black text
+-- vanished, and bright black/yellow sat in the wrong slots.
+-- stylix themes the NixOS hosts only and cannot reach a Windows-side WezTerm,
+-- so this file stays the source of truth for the terminal palette.
+config.color_scheme = "Catppuccin Mocha"
 
 -- Block cursor, no blinking
 config.default_cursor_style = "SteadyBlock"
@@ -93,6 +60,11 @@ config.window_padding = {
 
 -- Keep normal Windows decorations
 config.window_decorations = "TITLE | RESIZE"
+
+-- Render in software. The GPU front ends (OpenGL/WebGPU) composite through the
+-- Windows driver and produce artefacts here (torn/ghosted cells, dropped
+-- redraws), so the CPU renderer is the stable path even though it costs more.
+config.front_end = "Software"
 
 -- Ctrl+Space -> NUL, matching what tmux expects for C-Space
 config.keys = {
