@@ -1,0 +1,29 @@
+# Tailscale node agent for this workstation.
+#
+# This file lives in the configuration repository rather than in /etc/systemd
+# because the repository is the source of truth: a new machine links the same
+# file. wsl2/tailscale-setup.sh does the linking and starting.
+#
+# It cannot be a home-manager service: the daemon creates a tun interface, which
+# needs root, and home-manager owns no system services on Ubuntu. The binary is
+# still Nix's - the path below is the home-manager profile's, so it follows the
+# profile rather than being installed into the system.
+[Unit]
+Description=Tailscale node agent
+Documentation=https://tailscale.com/kb/
+Wants=network-pre.target
+After=network-pre.target
+
+[Service]
+Type=notify
+ExecStart=/home/rytter/.nix-profile/bin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=41641
+ExecStopPost=/home/rytter/.nix-profile/bin/tailscale --socket=/run/tailscale/tailscaled.sock down
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=tailscale
+RuntimeDirectoryMode=0755
+StateDirectory=tailscale
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=multi-user.target

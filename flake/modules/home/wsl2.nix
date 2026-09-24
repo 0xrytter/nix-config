@@ -98,6 +98,12 @@ in {
         cmd.exe /c start ''' "$url" >/dev/null 2>&1 &
       fi
     '')
+    # The fleet (iacthing) is tailnet-only: its Grafana, Loki and the agent box's
+    # API answer on the tunnel and nowhere else. The client comes from here so a
+    # new machine needs no package manager; the daemon is a system service because
+    # it creates a tun interface, and wsl2/tailscale-setup.sh links the unit that
+    # starts it. See step 9 of wsl2/README.md.
+    tailscale
   ];
 
   # Point xdg-open's $BROWSER at wslview so login flows open on Windows.

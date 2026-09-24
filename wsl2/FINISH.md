@@ -1,6 +1,6 @@
 # WSL2 finish steps
 
-Two one-time steps to finish the WSL2 setup after pulling/rebuilding:
+Three one-time steps to finish the WSL2 setup after pulling/rebuilding:
 
 ## 1. Make fish the login shell
 
@@ -37,3 +37,21 @@ stylix-themed terminals on the NixOS hosts.
 Note: the fish/tmux nix config takes effect after `home-manager switch`
 (`bash wsl2/switch.sh`) — new tmux panes get the new shell/PATH; existing
 panes keep their old environment until their shell restarts.
+
+## 3. Put this machine on the tailnet
+
+The iacthing boxes answer for their applications on the tunnel only, so without
+this the fleet's Grafana and the agent box's API are unreachable from here.
+
+```
+bash wsl2/tailscale-setup.sh
+sudo tailscale up          # prints a URL; open it in Windows
+```
+
+The client comes from `flake/modules/home/wsl2.nix`; the daemon is a system
+service, which is why this is a linked systemd unit rather than anything
+home-manager could own on Ubuntu. Details, including what to change if you want
+the fleet's host names to resolve, are in step 9 of `wsl2/README.md`.
+
+Windows stays off the tunnel either way — a browser there still needs an SSH
+forward for the fleet's UI, documented in the iacthing repository's `ACCESS.md`.

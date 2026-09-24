@@ -26,4 +26,5 @@ else
   echo "WARNING: fish not found on PATH; skipping login-shell setup."
 fi
 
-echo "Done. To run docker as a daemon:   bash wsl2/docker-setup.sh"
+echo "Done. To run docker as a daemon:      bash wsl2/docker-setup.sh"
+echo "      To reach the fleet's services:  bash wsl2/tailscale-setup.sh"

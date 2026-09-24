@@ -271,7 +271,60 @@ Then reopen Ubuntu/WSL.
 
 ---
 
-## 9. Install JetBrainsMono Nerd Font on Windows
+## 9. Tailscale (reaching the fleet)
+
+The iacthing boxes are tailnet-only. Their Grafana, Loki, VictoriaMetrics and the
+agent box's API answer on the tunnel and nowhere else. SSH is the one exception,
+open on every box, which is why the repository scripts work from anywhere while
+the applications need this step.
+
+The client is declared in `flake/modules/home/wsl2.nix`, so it arrives with the
+profile. The daemon is a system service, because it creates a tun interface and
+that needs root - and home-manager owns no system services on Ubuntu. The unit
+file therefore lives in this repository and is linked into systemd once:
+
+```bash
+bash wsl2/tailscale-setup.sh
+sudo tailscale up
+```
+
+`tailscale up` prints a URL. Open it in Windows to add this machine to the tailnet,
+then check it:
+
+```bash
+sudo tailscale status          # the three boxes should be listed
+curl -s http://obs01:3000/api/health
+crush -H tcp://agent01:7799
+```
+
+### Host names, or addresses
+
+Without `--accept-dns` the fleet's names do not resolve and the addresses have to
+be used instead:
+
+```bash
+curl -s http://100.118.112.28:3000/api/health
+```
+
+MagicDNS needs tailscale to own `/etc/resolv.conf`, and WSL rewrites that file on
+every start, so it also needs this in `/etc/wsl.conf`:
+
+```ini
+[network]
+generateResolvConf = false
+```
+
+An address is stable while a node exists; a re-provisioned box joins again and gets
+a new one. The iacthing repository's `status.sh` prints the current address of
+every host, which is the answer when a name cannot be trusted.
+
+One thing this does not do: Windows stays off the tunnel. This joins WSL only, so a
+Windows browser still needs an SSH forward for the fleet's UI, and the commands for
+those are in the iacthing repository's `ACCESS.md`.
+
+---
+
+## 10. Install JetBrainsMono Nerd Font on Windows
 
 The terminal renderer runs on Windows, so the terminal font must be installed on Windows as well.
 
@@ -293,7 +346,7 @@ This is one of the small pieces of workstation configuration that lives outside 
 
 ---
 
-## 10. Install WezTerm on Windows
+## 11. Install WezTerm on Windows
 
 Install WezTerm normally on Windows.
 
@@ -325,7 +378,7 @@ A manual copy is also perfectly fine.
 
 ---
 
-## 11. WezTerm configuration
+## 12. WezTerm configuration
 
 Use the following `.wezterm.lua`:
 
@@ -462,7 +515,7 @@ The maximize callback can cause a small visible startup/resize animation on Wind
 
 ---
 
-## 12. Verify the Linux environment
+## 13. Verify the Linux environment
 
 Inside WSL/WezTerm:
 
@@ -495,7 +548,7 @@ should typically resolve somewhere under:
 
 ---
 
-## 13. Localhost networking
+## 14. Localhost networking
 
 Servers running inside WSL should be reachable directly from the Windows host through `localhost`.
 
@@ -523,7 +576,7 @@ This allows the Linux environment to run the application while Windows runs the 
 
 ---
 
-## 14. Optional: mirrored WSL networking
+## 15. Optional: mirrored WSL networking
 
 For simpler bidirectional localhost behavior and potentially better interaction with VPNs, create:
 
@@ -550,7 +603,7 @@ This is optional. If the default networking already works for everything require
 
 ---
 
-## 15. Useful WSL commands
+## 16. Useful WSL commands
 
 From PowerShell:
 
@@ -582,7 +635,7 @@ wsl --shutdown
 
 ---
 
-## 16. Project workflow
+## 17. Project workflow
 
 Projects remain fully self-contained.
 
@@ -627,7 +680,7 @@ There should normally be no reason to install things such as `.NET`, Node, Rust,
 
 ---
 
-## 17. Ownership split
+## 18. Ownership split
 
 ### Windows owns
 
@@ -681,7 +734,7 @@ project-specific tooling
 
 ---
 
-## 18. Fresh-machine checklist
+## 19. Fresh-machine checklist
 
 The complete setup is:
 
@@ -698,11 +751,12 @@ The complete setup is:
 10. Clone nix-config
 11. Run ./wsl2/bootstrap.sh
 12. Run ./wsl2/docker-setup.sh
-13. Install JetBrainsMono Nerd Font on Windows
-14. Install WezTerm on Windows
-15. Copy .wezterm.lua to %USERPROFILE%
-16. Open WezTerm
-17. Done
+13. Run ./wsl2/tailscale-setup.sh, then sudo tailscale up
+14. Install JetBrainsMono Nerd Font on Windows
+15. Install WezTerm on Windows
+16. Copy .wezterm.lua to %USERPROFILE%
+17. Open WezTerm
+18. Done
 ```
 
 After that, normal development becomes:
