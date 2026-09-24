@@ -311,14 +311,6 @@ resets `PATH` to a root-safe default and a client living in your home profile is
 invisible to it: `sudo tailscale` finds nothing while plain `tailscale` works.
 The operator flag is what removes that asymmetry afterwards.
 
-Then check it:
-
-```bash
-tailscale status               # the three boxes should be listed
-curl -s http://obs01:3000/api/health
-crush -H tcp://agent01:7799
-```
-
 ### Host names, or addresses
 
 Without `--accept-dns` the fleet's names do not resolve and the addresses have to
@@ -328,8 +320,10 @@ be used instead:
 curl -s http://100.118.112.28:3000/api/health
 ```
 
-MagicDNS needs tailscale to own `/etc/resolv.conf`, and WSL rewrites that file on
-every start, so it also needs this in `/etc/wsl.conf`:
+With it, tailscale owns `/etc/resolv.conf` - it rewrites that file when the daemon
+starts, which is what makes `agent01` resolve rather than only `100.76.233.93`.
+WSL regenerates the file on every distro start, so if a restart ever leaves names
+not resolving, `/etc/wsl.conf` settles the race:
 
 ```ini
 [network]
@@ -339,6 +333,38 @@ generateResolvConf = false
 An address is stable while a node exists; a re-provisioned box joins again and gets
 a new one. The iacthing repository's `status.sh` prints the current address of
 every host, which is the answer when a name cannot be trusted.
+
+### Talking to the agent box
+
+Once this machine is on the tailnet, `agent` is the client for the fleet's agent
+box - the same patched 0.95.0 build the box runs, pointed at it over the tunnel:
+
+```bash
+cd ~/src/<repo>
+agent                                            # the TUI
+agent run "reply with the single word: ready"    # one shot, non-interactive
+```
+
+**Run it from the directory you want it to work in.** A crush client sends its own
+working directory as the workspace path and the server resolves it *on the box*, so
+the same path has to exist at both ends. The fleet mirrors `/home/rytter/src` on
+agent01 for exactly that reason, which is why the habit is `cd ~/src/<repo>` first:
+the agent then works in that same path on the box.
+
+No API key is involved here on purpose: the credential stays on the box and the box
+does the work, including every file it touches. And that cuts both ways - what it can
+touch is what exists *under that mirrored path on the box*, so cloning a repository
+here does not put it there.
+
+Two things that look like something else when they go wrong:
+
+- **Without the env var it runs locally.** `CRUSH_CLIENT_SERVER=1` (set inside the
+  `agent` function) is the whole difference between driving the server and running
+  the agent in this process; without it the TUI opens, answers, and reads *your*
+  files, which is a very convincing thing to watch.
+- **The client sends its environment with the request.** A credential exported in
+  that shell travels to the box, so start it from a shell holding nothing you would
+  not hand over.
 
 One thing this does not do: Windows stays off the tunnel. This joins WSL only, so a
 Windows browser still needs an SSH forward for the fleet's UI, and the commands for

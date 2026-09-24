@@ -108,4 +108,25 @@ in {
 
   # Point xdg-open's $BROWSER at wslview so login flows open on Windows.
   home.sessionVariables.BROWSER = "wslview";
+
+  # A client for the fleet's agent box, which runs crush as a server on the
+  # tailnet. Three things here are not preference:
+  #
+  #   CRUSH_CLIENT_SERVER=1 is the whole difference between driving that server
+  #   and running the agent in this process. Without it the `-H` flag is parsed
+  #   and ignored, which looks exactly like a local agent that can see your files.
+  #   crush95, not crush, because the deployed server is the patched 0.95.0 and
+  #   the wire protocol is not stable between releases.
+  #   no OPENCODE_API_KEY: the credential is the box's, and the box does the work.
+  #   Everything the agent touches is over there - which is also why the path it
+  #   works in has to exist on both ends. iacthing's roles/agent.nix mirrors
+  #   /home/rytter/src on the box for exactly that: run this from ~/src/<repo> and
+  #   the workspace is that same path on the box.
+  #
+  # The same colour scrub as `crush`, for the same tmux/cursed_renderer reason.
+  programs.fish.functions.agent = ''
+    set -lx CRUSH_CLIENT_SERVER 1
+    command crush95 -H tcp://agent01:7799 $argv
+    printf '\e]112\a\e]111\a'
+  '';
 }
