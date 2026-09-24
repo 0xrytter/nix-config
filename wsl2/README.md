@@ -281,19 +281,35 @@ the applications need this step.
 The client is declared in `flake/modules/home/wsl2.nix`, so it arrives with the
 profile. The daemon is a system service, because it creates a tun interface and
 that needs root - and home-manager owns no system services on Ubuntu. The unit
-file therefore lives in this repository and is linked into systemd once:
+file therefore lives in this repository, and one script does the rest:
 
 ```bash
 bash wsl2/tailscale-setup.sh
-sudo ~/.nix-profile/bin/tailscale up
-sudo ~/.nix-profile/bin/tailscale set --operator="$USER"
 ```
 
-`tailscale up` prints a URL. Open it in Windows to add this machine to the tailnet.
-The full path is needed because `sudo` resets `PATH` to a root-safe default, so a
-client that lives in your home profile is invisible to it — `sudo tailscale` finds
-nothing while plain `tailscale` works. The operator flag is the fix for daily use:
-after it, the CLI no longer needs sudo at all.
+It links and starts the daemon, joins the tailnet - printing a URL to open in
+Windows if this machine is not authorised yet - and finally hands the node to your
+user, so nothing afterwards needs sudo. It asks for the password once. Re-running
+it is safe.
+
+Add `--accept-dns` if you want the fleet's host names as well as its addresses:
+
+```bash
+bash wsl2/tailscale-setup.sh --accept-dns
+```
+
+Then check it:
+
+```bash
+tailscale status               # the three boxes should be listed
+curl -s http://obs01:3000/api/health
+crush -H tcp://agent01:7799
+```
+
+Every call the script makes to the client uses its full path, because `sudo`
+resets `PATH` to a root-safe default and a client living in your home profile is
+invisible to it: `sudo tailscale` finds nothing while plain `tailscale` works.
+The operator flag is what removes that asymmetry afterwards.
 
 Then check it:
 
@@ -757,7 +773,7 @@ The complete setup is:
 10. Clone nix-config
 11. Run ./wsl2/bootstrap.sh
 12. Run ./wsl2/docker-setup.sh
-13. Run ./wsl2/tailscale-setup.sh, then the two commands it prints
+13. Run ./wsl2/tailscale-setup.sh (it joins the tailnet and prints the URL to authorise)
 14. Install JetBrainsMono Nerd Font on Windows
 15. Install WezTerm on Windows
 16. Copy .wezterm.lua to %USERPROFILE%

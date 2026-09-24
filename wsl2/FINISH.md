@@ -45,17 +45,15 @@ this the fleet's Grafana and the agent box's API are unreachable from here.
 
 ```
 bash wsl2/tailscale-setup.sh
-sudo ~/.nix-profile/bin/tailscale up           # prints a URL; open it in Windows
-sudo ~/.nix-profile/bin/tailscale set --operator="$USER"
 ```
 
-The full path is not a typo: `sudo` resets `PATH` to a root-safe default, so the
-client in your home profile is invisible to it. The operator flag then makes plain
-`tailscale status` work without sudo. The client comes from
-`flake/modules/home/wsl2.nix`; the daemon is a system service, which is why this is
-a linked systemd unit rather than anything home-manager could own on Ubuntu.
-Details, including what to change if you want the fleet's host names to resolve,
-are in step 9 of `wsl2/README.md`.
+The script links and starts the daemon, joins the tailnet - printing a URL to open
+in Windows if the machine is not authorised yet - and hands the node to your user
+so nothing afterwards needs sudo. The client comes from
+`flake/modules/home/wsl2.nix`; the daemon is a system service, which is why it is a
+linked systemd unit rather than anything home-manager could own on Ubuntu. Add
+`--accept-dns` if you want the fleet's host names to resolve as well; details are
+in step 9 of `wsl2/README.md`.
 
 Windows stays off the tunnel either way — a browser there still needs an SSH
 forward for the fleet's UI, documented in the iacthing repository's `ACCESS.md`.

@@ -15,7 +15,7 @@ and a home-manager-only profile for Ubuntu on WSL2.
 | `bash wsl2/switch.sh` | Rebuild home-manager for WSL2 |
 | `bash wsl2/docker-setup.sh` | Install Docker Engine and run it as a daemon |
 | `bash wsl2/docker-restart.sh` | Restart the Docker daemon |
-| `bash wsl2/tailscale-setup.sh` | Link and start the tailscale daemon, so the fleet's tailnet-only services answer here |
+| `bash wsl2/tailscale-setup.sh` | Link and start the tailscale daemon and join the tailnet, so the fleet's tailnet-only services answer here |
 
 NixOS machines: `rebuild.sh` compiles both the system and the home-manager
 portion in one go. Standalone home-manager profiles are exposed for every host
