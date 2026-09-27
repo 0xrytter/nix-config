@@ -59,14 +59,14 @@ supervision replaces practice — so split the work by whose hands it needs:
 ## Secrets — never handle the values
 
 - Treat secrets (API keys, passwords, tokens, DSNs, private keys) as somethings
-  you never need to *see*. Reading them to diagnose infrastructure is almost
+  you never need to _see_. Reading them to diagnose infrastructure is almost
   never necessary: use systems that store the values for you, or work from
   `is it reachable` / `is it valid` questions instead of printing the value.
 - Never print a decrypted or raw secret to stdout, a shell command, a file
   under the working tree, or a tool input — even in a "trusted" test.
 - Decrypting a sops secret to confirm config is only OK if the value is
   consumed by a program and never surfaces in the session. If you need to
-  inspect a sops file, read the *encrypted* form or check the key, not the
+  inspect a sops file, read the _encrypted_ form or check the key, not the
   plaintext.
 - If a secret was exposed in a session, say so immediately and recommend
   rotating it — do not keep working as if nothing happened.
@@ -224,7 +224,7 @@ Prefer immutable values and variables. Rebind/bind-once over reassign,
 persistent structures over in-place mutation. Where the language has a
 convention for it (Elixir's `=` / rebinding, Go's `const` + value semantics,
 JS/TS `const`, functional style generally), use that convention. Mutate only
-when the language *forces* the mutable approach (Go maps/slices in place,
+when the language _forces_ the mutable approach (Go maps/slices in place,
 system performance-critical paths) — and say so if you do. Like types,
 immutability locks in behaviour: a value that cannot change is one you never
 have to trace reassignments for. This is the same discipline as "declared,
@@ -290,18 +290,18 @@ notifier, own payments tunnel) so the project code never learns the vendor's
 shape.
 
 **Depth vs sprawl.** Same package-first preference, but applied with a depth
-budget — the dependency's *tree* is the cost, not the import line. One crate
+budget — the dependency's _tree_ is the cost, not the import line. One crate
 that solves the problem beats five sub-utilities plus hand-rolled glue (the
 JavaScript pattern: a billion packages to serve HTML). Two directions of
 failure exist and both lose to the registry:
 
-- *Registry-refusal*: hand-rolling protocol-shaping primitives that maintain
+- _Registry-refusal_: hand-rolling protocol-shaping primitives that maintain
   battle-tested homes — calendar math (use `chrono`), signature schemes (use
   `aws-sigv4`), HTTP clients (use `reqwest`). Hand-rolling is for artifacts
   where owning the primitive is the point (comparison ports, learning
   exercises), or when no maintained option exists — and every hand-roll
   should carry a `ponytail:` flag naming the dependency it should become.
-- *Registry-sprawl*: reaching for micro-packages for single functions, or
+- _Registry-sprawl_: reaching for micro-packages for single functions, or
   accepting a deep dependency tree for a small feature (npm-style). New
   dependencies get a quick cost check: what does it pull in, what does it
   solve, is the solve bigger than the import.
