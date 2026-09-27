@@ -145,6 +145,12 @@ in {
     # Same claude-code the NixOS hosts carry. It is unfree, which is why the
     # flake's allowUnfreePredicate names it alongside crush.
     claude-code
+    # herdr plays its sound notifications by shelling out to an mp3-capable
+    # player (paplay first on Linux) and silently does nothing when it finds
+    # none. WSLg already runs the PulseAudio server at unix:/mnt/wslg/PulseServer,
+    # so only the client was missing: without it every notification logs
+    # "no mp3-capable audio player available".
+    pulseaudio
   ];
 
   # Herdr's config is a plain XDG file, so home-manager owns it rather than
