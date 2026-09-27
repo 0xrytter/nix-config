@@ -47,8 +47,8 @@ in {
   fonts.fontconfig.enable = true;
 
   # Ubuntu's nix install only puts the nix bin dirs on PATH for bash login
-  # shells(/etc/profile.d/nix.sh). When fish is the shell (WSL login or a tmux
-  # default-shell pane) that never runs, so nix-installed tools like zoxide/nvim
+  # shells(/etc/profile.d/nix.sh). When fish is the shell (a WSL login or a herdr
+  # pane) that never runs, so nix-installed tools like zoxide/nvim
   # become "not found". Ensure the nix user + default profile bins are always on
   # PATH inside fish. conf.d runs before config.fish, i.e. before hm-session-vars.
   xdg.configFile."fish/conf.d/10-nix-path.fish".text = ''
@@ -104,7 +104,28 @@ in {
     # it creates a tun interface, and wsl2/tailscale-setup.sh links the unit that
     # starts it. See step 9 of wsl2/README.md.
     tailscale
+    # herdr owns the terminals the coding agents live in: detach without
+    # stopping work, and one window over the local machine plus the agent box.
+    # It is in nixpkgs, so nothing is curl-installed; the box carries the same
+    # package so a remote session runs the same build.
+    herdr
+    # Same claude-code the NixOS hosts carry. It is unfree, which is why the
+    # flake's allowUnfreePredicate names it alongside crush.
+    claude-code
   ];
+
+  # Herdr's config is a plain XDG file, so home-manager owns it rather than
+  # herdr's settings editor. The store symlink is read-only on purpose: change
+  # settings in flake/config/herdr.toml and switch. Machine profiles
+  # (`herdr machine add`) are runtime state, not configuration, so they stay out
+  # of Nix.
+  xdg.configFile."herdr/config.toml" = {
+    source = ../../config/herdr.toml;
+    # The real file already there is herdr's own `onboarding = false`, and this
+    # declaration says the same thing, so replacing it outright loses nothing
+    # and leaves the path Nix-owned from here on.
+    force = true;
+  };
 
   # Point xdg-open's $BROWSER at wslview so login flows open on Windows.
   home.sessionVariables.BROWSER = "wslview";
@@ -128,5 +149,42 @@ in {
     set -lx CRUSH_CLIENT_SERVER 1
     command crush95 -H tcp://agent01:7799 $argv
     printf '\e]112\a\e]111\a'
+  '';
+
+  # Claude Code, routed through Charm Hyper. Hyper speaks the Anthropic Messages
+  # API, this machine's own Hyper key is the credential, and the three models in
+  # rotation ride the /model picker's slots: the session default plus the sonnet
+  # and haiku aliases. `command claude` skips this function, so a first-party
+  # Anthropic session is still one word away.
+  #
+  # The key is a real secret, so it is not declared here: seedHyperKey below
+  # creates the slot empty, and the launcher lifts the file into the environment
+  # at start, the same shape as the opencode-go launchers in
+  # modules/home/opencode.nix.
+  programs.fish.functions.claude = ''
+    set -l key ${config.xdg.configHome}/opencode/secrets/hyper-local.key
+    if not test -s $key
+      echo "no Hyper key at $key (see wsl2/README.md, 'Agent credentials')" >&2
+      return 1
+    end
+    set -lx ANTHROPIC_BASE_URL https://hyper.charm.land
+    set -lx ANTHROPIC_API_KEY (cat $key)
+    set -lx ANTHROPIC_MODEL deepseek-v4.1-flash
+    set -lx ANTHROPIC_DEFAULT_SONNET_MODEL kimi-k3
+    set -lx ANTHROPIC_DEFAULT_HAIKU_MODEL glm-5.3-flash
+    set -lx CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY 1
+    command claude $argv
+  '';
+
+  # The Hyper key slot: an empty mode-600 file, created once so the operator only
+  # has to paste a key in rather than also get the file's mode right. The
+  # launcher refuses to start while it is empty (test -s), so a half-finished
+  # setup fails loudly instead of sending an empty key.
+  home.activation.seedHyperKey = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD mkdir -p ${config.xdg.configHome}/opencode/secrets
+    $DRY_RUN_CMD chmod 700 ${config.xdg.configHome}/opencode/secrets
+    if [ ! -e ${config.xdg.configHome}/opencode/secrets/hyper-local.key ]; then
+      $DRY_RUN_CMD install -m 600 /dev/null ${config.xdg.configHome}/opencode/secrets/hyper-local.key
+    fi
   '';
 }

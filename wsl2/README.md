@@ -17,7 +17,7 @@ WSL2
 └── Ubuntu 24.04 LTS
     ├── Nix
     ├── Home Manager
-    ├── tmux
+    ├── herdr
     ├── Neovim
     ├── direnv / nix-direnv
     ├── Docker Engine
@@ -204,7 +204,7 @@ It should configure the Linux user environment, including the things owned by Ni
 ```text
 shell
 Git
-tmux
+herdr
 Neovim
 direnv / nix-direnv
 prompt
@@ -214,6 +214,36 @@ Nix configuration
 ```
 
 After this step, the temporary Git shell is no longer important.
+
+### Agent credentials
+
+The profile declares the harnesses but never their secrets. Each credential is a
+mode-600 file under a mode-700 directory that the launcher reads at start, so
+nothing secret is ever written into the Nix store.
+
+Claude Code is the default harness and routes through **Charm Hyper**. The
+profile seeds an empty key file for it (`seedHyperKey` in
+`flake/modules/home/wsl2.nix`), so the only thing left is to paste the machine's
+Hyper key in:
+
+```bash
+nvim ~/.config/opencode/secrets/hyper-local.key
+```
+
+If the file is not there yet - an older profile, or a checkout that has not been
+switched - create it first:
+
+```bash
+mkdir -p ~/.config/opencode/secrets; chmod 700 ~/.config/opencode/secrets
+install -m 600 /dev/null ~/.config/opencode/secrets/hyper-local.key
+```
+
+`claude` (and the `ai` abbreviation) then start against Hyper, with
+`deepseek-v4.1-flash` as the default model, `kimi-k3` on the `sonnet` slot and
+`glm-5.3-flash` on the `haiku` slot, so `/model` switches between them. Without
+the key the launcher refuses to start rather than quietly falling back to
+Anthropic, and `command claude` runs the plain binary if the first-party API is
+ever wanted instead.
 
 ---
 
@@ -428,32 +458,33 @@ A manual copy is also perfectly fine.
 
 ## 12. WezTerm configuration
 
-Use the following `.wezterm.lua`:
+This is the shape of `wsl2/wezterm.lua`; that file in the repo is the source of
+truth, so copy it rather than retyping this.
 
 ```lua
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
--- tmux owns windows/panes/tabs
+-- herdr owns workspaces/tabs/panes
 config.enable_tab_bar = false
 
--- tmux survives terminal closure, so don't ask before closing
+-- herdr survives terminal closure, so don't ask before closing
 config.window_close_confirmation = "NeverPrompt"
 
 -- Go directly into Ubuntu WSL
 config.default_domain = "WSL:Ubuntu-24.04"
 
--- Start/attach persistent tmux session
+-- Boot herdr. Absolute path inside a login shell: the WSL domain inherits the
+-- distro PATH, which has no nix profile, and the login shell is what restores
+-- it for herdr and for every pane it spawns.
 local wsl_domains = wezterm.default_wsl_domains()
 
 for _, domain in ipairs(wsl_domains) do
   if domain.name == "WSL:Ubuntu-24.04" then
     domain.default_prog = {
-      "tmux",
-      "new-session",
-      "-A",
-      "-s",
-      "main",
+      "/bin/bash",
+      "-lc",
+      "exec /home/rytter/.nix-profile/bin/herdr",
     }
   end
 end
@@ -518,15 +549,6 @@ config.window_padding = {
 -- Normal Windows decorations
 config.window_decorations = "TITLE | RESIZE"
 
--- Ctrl+Space must arrive at tmux as NUL / C-Space
-config.keys = {
-  {
-    key = "Space",
-    mods = "CTRL",
-    action = wezterm.action.SendString("\x00"),
-  },
-}
-
 -- Start maximized
 wezterm.on("gui-startup", function(cmd)
   local tab, pane, window = wezterm.mux.spawn_window(cmd or {})
@@ -538,26 +560,18 @@ return config
 
 ### Notes
 
-WezTerm's own tab bar is disabled because tmux owns sessions, windows, and panes.
+WezTerm's own tab bar is disabled because herdr owns sessions, workspaces, tabs
+and panes.
 
-The terminal automatically runs:
-
-```text
-tmux new-session -A -s main
-```
-
-This means:
+The terminal boots straight into:
 
 ```text
-main exists     -> attach
-main missing    -> create
+exec /home/rytter/.nix-profile/bin/herdr
 ```
 
-Closing WezTerm does not kill the tmux session.
-
-Opening WezTerm again should attach to the existing `main` session.
-
-`Ctrl+Space` is explicitly mapped to NUL because tmux uses it as the configured prefix and Windows terminal input otherwise may not transmit it correctly.
+A bare `herdr` (no `--session`) launches or attaches to the persistent default
+session, so closing WezTerm leaves the session and its panes running, and opening
+it again attaches to what is already there.
 
 The maximize callback can cause a small visible startup/resize animation on Windows. This is cosmetic. If it becomes too annoying, remove the `gui-startup` callback and launch WezTerm from a Windows shortcut configured to run maximized instead.
 
@@ -569,7 +583,7 @@ Inside WSL/WezTerm:
 
 ```bash
 nix --version
-tmux -V
+herdr --version
 nvim --version
 docker --version
 systemctl is-active docker
@@ -578,14 +592,14 @@ systemctl is-active docker
 Verify important tools are coming from Nix rather than Ubuntu where expected:
 
 ```bash
-which tmux
+which herdr
 which nvim
 ```
 
 For example:
 
 ```bash
-readlink -f "$(which tmux)"
+readlink -f "$(which herdr)"
 ```
 
 should typically resolve somewhere under:
@@ -760,7 +774,7 @@ any mandatory corporate Linux tooling
 ```text
 shell
 Git
-tmux
+herdr
 Neovim
 direnv / nix-direnv
 prompt
@@ -798,13 +812,14 @@ The complete setup is:
 9. Start a temporary Nix shell containing Git
 10. Clone nix-config
 11. Run ./wsl2/bootstrap.sh
-12. Run ./wsl2/docker-setup.sh
-13. Run ./wsl2/tailscale-setup.sh (it joins the tailnet and prints the URL to authorise)
-14. Install JetBrainsMono Nerd Font on Windows
-15. Install WezTerm on Windows
-16. Copy .wezterm.lua to %USERPROFILE%
-17. Open WezTerm
-18. Done
+12. Paste the Hyper key into ~/.config/opencode/secrets/hyper-local.key (section 7, "Agent credentials")
+13. Run ./wsl2/docker-setup.sh
+14. Run ./wsl2/tailscale-setup.sh (it joins the tailnet and prints the URL to authorise)
+15. Install JetBrainsMono Nerd Font on Windows
+16. Install WezTerm on Windows
+17. Copy .wezterm.lua to %USERPROFILE%
+18. Open WezTerm
+19. Done
 ```
 
 After that, normal development becomes:
