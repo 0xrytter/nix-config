@@ -214,6 +214,14 @@ in {
     command claude --settings ${hyperClaudeSettings} $argv
   '';
 
+  # First-party Claude Code, for the times the work wants an Anthropic model
+  # rather than a Hyper one. The same binary with none of the Hyper environment
+  # and no --settings override, so it reads the shared ~/.claude/settings.json
+  # and authenticates against Anthropic on the subscription login instead.
+  programs.fish.functions.cclaude = ''
+    command claude $argv
+  '';
+
   # The Hyper key slot: an empty mode-600 file, created once so the operator only
   # has to paste a key in rather than also get the file's mode right. The
   # launcher refuses to start while it is empty (test -s), so a half-finished
