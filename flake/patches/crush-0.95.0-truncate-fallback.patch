@@ -1,0 +1,78 @@
+diff --git a/internal/agent/agent.go b/internal/agent/agent.go
+--- a/internal/agent/agent.go
++++ b/internal/agent/agent.go
+@@ -1216,7 +1216,17 @@
+ 	if shouldSummarize {
+ 		a.activeRequests.Del(call.SessionID)
+ 		if summarizeErr := a.Summarize(genCtx, call.SessionID, call.ProviderOptions, call.OnAuthRefresh); summarizeErr != nil {
+-			return nil, summarizeErr
++			// Summarization is best-effort, and it is attempted exactly when the
++			// session is at its largest, so a failure here must not end the run.
++			// Drop the transcript instead: the marker becomes the new context root,
++			// which cannot fail the way a model call can.
++			slog.Warn("Summarize failed, truncating the session instead",
++				"session_id", call.SessionID,
++				"error", summarizeErr,
++			)
++			if truncErr := a.truncateSession(genCtx, call.SessionID, summarizeErr); truncErr != nil {
++				return nil, summarizeErr
++			}
+ 		}
+ 		// If the agent wasn't done...
+ 		if len(currentAssistant.ToolCalls()) > 0 {
+@@ -1501,6 +1511,55 @@
+ 	return qErr
+ }
+ 
++// truncateSession is the fallback for a failed summarization: it makes a
++// marker message the session's new context root, so the next turn starts from
++// it rather than from a transcript the provider will reject. It makes no model
++// call, so it cannot fail for the reason the turn failed, and the dropped
++// messages stay in the store but are excluded, which is already how a summary
++// message works (see getSessionMessages).
++func (a *sessionAgent) truncateSession(ctx context.Context, sessionID string, cause error) error {
++	largeModel := a.largeModel.Get()
++
++	currentSession, err := a.sessions.Get(ctx, sessionID)
++	if err != nil {
++		return err
++	}
++
++	marker, err := a.messages.Create(ctx, sessionID, message.CreateMessageParams{
++		Role:             message.Assistant,
++		Model:            largeModel.ModelCfg.Model,
++		Provider:         largeModel.ModelCfg.Provider,
++		IsSummaryMessage: true,
++	})
++	if err != nil {
++		return err
++	}
++
++	marker.AppendContent(fmt.Sprintf("Earlier conversation context was dropped because automatic summarization failed (%v). Continue from the user's next message; if the dropped context still matters, it can be restated.", cause))
++	marker.AddFinish(message.FinishReasonEndTurn, "", "")
++	if err := a.messages.Update(ctx, marker); err != nil {
++		return err
++	}
++
++	currentSession.SummaryMessageID = marker.ID
++	currentSession.PromptTokens = 0
++	currentSession.CompletionTokens = 0
++	currentSession.EstimatedUsage = true
++	if _, err := a.sessions.Save(ctx, currentSession); err != nil {
++		return err
++	}
++
++	// Drain the queue the way a successful summarization does, so an
++	// instruction that arrived mid-turn is not stranded behind the failure.
++	queued, ok := a.messageQueue.Get(sessionID)
++	if !ok || len(queued) == 0 {
++		return nil
++	}
++	a.messageQueue.Set(sessionID, queued[1:])
++	_, runErr := a.Run(ctx, queued[0])
++	return runErr
++}
++
+ func (a *sessionAgent) getCacheControlOptions() fantasy.ProviderOptions {
+ 	if t, _ := strconv.ParseBool(os.Getenv("CRUSH_DISABLE_ANTHROPIC_CACHE")); t {
+ 		return fantasy.ProviderOptions{}

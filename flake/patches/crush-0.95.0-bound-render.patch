@@ -1,0 +1,200 @@
+diff --git a/internal/ui/chat/tools.go b/internal/ui/chat/tools.go
+index 634b9f07..50ff8b82 100644
+--- a/internal/ui/chat/tools.go
++++ b/internal/ui/chat/tools.go
+@@ -962,8 +962,51 @@ func formatSize(bytes int) string {
+ 	}
+ }
+ 
++// maxFormattedLines bounds how much content a renderer will format. A collapsed
++// card shows collapsedMaxLines of it, but syntax highlighting and markdown
++// rendering cost far more per line than the ten lines that end up visible, and
++// the TUI re-renders on every keystroke. A thousand lines is far past any
++// ordinary tool result.
++const maxFormattedLines = 1000
++
++// boundForFormatting truncates content to the collapsed line budget unless the
++// card is expanded, and reports how many lines it hid. Renderers call this
++// before formatting, so the cost is bounded by what is displayed rather than by
++// what was stored.
++func boundForFormatting(content string, expanded bool) (string, int) {
++	if expanded {
++		return content, 0
++	}
++	lineCount := strings.Count(content, "\n") + 1
++	if lineCount <= maxFormattedLines {
++		return content, 0
++	}
++	maxLines := collapsedMaxLines(lineCount)
++	lines := strings.Split(content, "\n")
++	return strings.Join(lines[:maxLines], "\n"), lineCount - maxLines
++}
++
++// diffTruncationNotice renders the marker shown in place of hidden lines.
++func diffTruncationNotice(sty *styles.Styles, width, hidden int) string {
++	return sty.Tool.DiffTruncation.
++		Width(width - toolBodyLeftPaddingTotal).
++		Render(fmt.Sprintf(assistantMessageTruncateFormat, hidden))
++}
++
+ // toolOutputDiffContent renders a diff between old and new content.
+ func toolOutputDiffContent(sty *styles.Styles, file, oldContent, newContent string, width int, expanded bool) string {
++	// A collapsed card only ever shows collapsedMaxLines, but the formatter
++	// below syntax-highlights every line it is handed. Truncating afterwards
++	// therefore pays for the whole diff to render ten lines of it, which is
++	// seconds per frame once the diff is large. Bound it first.
++	if !expanded {
++		unified, _, _ := diff.GenerateDiff(oldContent, newContent, file)
++		if bounded, hidden := boundForFormatting(unified, false); hidden > 0 {
++			return toolOutputDiffContentFromUnified(sty, bounded, width, true) +
++				"\n" + diffTruncationNotice(sty, width, hidden)
++		}
++	}
++
+ 	bodyWidth := width - toolBodyLeftPaddingTotal
+ 
+ 	formatter := common.DiffFormatter(sty).
+@@ -1014,6 +1057,16 @@ func formatNonZero(value int) string {
+ 
+ // toolOutputMultiEditDiffContent renders a diff with optional failed edits note.
+ func toolOutputMultiEditDiffContent(sty *styles.Styles, file string, meta tools.MultiEditResponseMetadata, totalEdits, width int, expanded bool) string {
++	// Same as toolOutputDiffContent: the formatter highlights every line, and a
++	// collapsed card shows collapsedMaxLines of them.
++	if !expanded {
++		unified, _, _ := diff.GenerateDiff(meta.OldContent, meta.NewContent, file)
++		if bounded, hidden := boundForFormatting(unified, false); hidden > 0 {
++			return toolOutputDiffContentFromUnified(sty, bounded, width, true) +
++				"\n" + diffTruncationNotice(sty, width, hidden)
++		}
++	}
++
+ 	bodyWidth := width - toolBodyLeftPaddingTotal
+ 
+ 	formatter := common.DiffFormatter(sty).
+@@ -1071,8 +1124,19 @@ func roundedEnumerator(lPadding, width int) tree.Enumerator {
+ 	}
+ }
+ 
++// maxMarkdownBytes is the point past which markdown is not worth rendering.
++// Glamour is superlinear -- a 2 MB tool result takes minutes to render, and the
++// TUI re-renders on every keystroke -- while the collapsed card shows
++// collapsedMaxLines of it. Past this size the content is shown as plain text,
++// which is the same fallback the renderer already takes when it errors.
++const maxMarkdownBytes = 256 << 10
++
+ // toolOutputMarkdownContent renders markdown content with optional truncation.
+ func toolOutputMarkdownContent(sty *styles.Styles, content string, width int, expanded bool) string {
++	if len(content) > maxMarkdownBytes {
++		return toolOutputPlainContent(sty, content, width, expanded)
++	}
++
+ 	content = stringext.NormalizeSpace(content)
+ 
+ 	// Cap width for readability.
+diff --git a/internal/ui/chat/tools_output_test.go b/internal/ui/chat/tools_output_test.go
+new file mode 100644
+index 00000000..3e881938
+--- /dev/null
++++ b/internal/ui/chat/tools_output_test.go
+@@ -0,0 +1,75 @@
++package chat
++
++import (
++	"strings"
++	"testing"
++
++	"github.com/charmbracelet/crush/internal/agent/tools"
++	"github.com/charmbracelet/crush/internal/diff"
++	"github.com/charmbracelet/crush/internal/ui/styles"
++)
++
++// A collapsed card shows collapsedMaxLines, so the cost of rendering one
++// should not scale with the size of the stored content. These benchmarks pin
++// that: each renders a large collapsed diff.
++
++func benchContent(n int) (before, after string) {
++	return strings.Repeat(strings.Repeat("a", 200)+"\n", n),
++		strings.Repeat(strings.Repeat("b", 200)+"\n", n)
++}
++
++func BenchmarkToolOutputDiffContentLargeDiff(b *testing.B) {
++	sty := styles.CharmtonePantera()
++	before, after := benchContent(50000)
++	b.ReportAllocs()
++	for b.Loop() {
++		_ = toolOutputDiffContent(&sty, "f.txt", before, after, 120, false)
++	}
++}
++
++func BenchmarkToolOutputMultiEditDiffContentLargeDiff(b *testing.B) {
++	sty := styles.CharmtonePantera()
++	before, after := benchContent(50000)
++	meta := tools.MultiEditResponseMetadata{OldContent: before, NewContent: after}
++	b.ReportAllocs()
++	for b.Loop() {
++		_ = toolOutputMultiEditDiffContent(&sty, "f.txt", meta, 1, 120, false)
++	}
++}
++
++func BenchmarkToolOutputDiffContentFromUnifiedLargeDiff(b *testing.B) {
++	sty := styles.CharmtonePantera()
++	before, after := benchContent(50000)
++	unified, _, _ := diff.GenerateDiff(before, after, "f.txt")
++	b.ReportAllocs()
++	for b.Loop() {
++		_ = toolOutputDiffContentFromUnified(&sty, unified, 120, false)
++	}
++}
++
++// Glamour is superlinear, so large content is shown as plain text instead.
++// Rendering this as markdown takes seconds; the assertion is on the output
++// because unlike the diff renderers this fallback changes what is displayed.
++func TestToolOutputMarkdownContentFallsBackWhenLarge(t *testing.T) {
++	sty := styles.CharmtonePantera()
++	content := strings.Repeat("# heading\nsome text in a line here\n", 12000)
++	if len(content) <= maxMarkdownBytes {
++		t.Fatalf("test content is %d bytes, want more than %d", len(content), maxMarkdownBytes)
++	}
++
++	got := toolOutputMarkdownContent(&sty, content, 80, false)
++	want := toolOutputPlainContent(&sty, content, 80, false)
++	if got != want {
++		t.Fatal("large content should fall back to plain rendering")
++	}
++}
++
++func TestToolOutputMarkdownContentRendersSmallContent(t *testing.T) {
++	sty := styles.CharmtonePantera()
++	content := "# heading\n\nsome *emphasised* text\n"
++
++	got := toolOutputMarkdownContent(&sty, content, 80, false)
++	if got == toolOutputPlainContent(&sty, content, 80, false) {
++		t.Fatal("small content should still be rendered as markdown")
++	}
++}
+diff --git a/internal/ui/chat/unified_diff.go b/internal/ui/chat/unified_diff.go
+index c4044bc0..8003d6dd 100644
+--- a/internal/ui/chat/unified_diff.go
++++ b/internal/ui/chat/unified_diff.go
+@@ -131,6 +131,9 @@ func parseUnifiedDiff(content string) []parsedDiffFile {
+ }
+ 
+ func toolOutputDiffContentFromUnified(sty *styles.Styles, content string, width int, expanded bool) string {
++	// Bound before parsing and formatting: both walk every line, and a
++	// collapsed card only shows collapsedMaxLines of the result.
++	content, hidden := boundForFormatting(content, expanded)
+ 	files := parseUnifiedDiff(content)
+ 	if len(files) == 0 {
+ 		bodyWidth := width - toolBodyLeftPaddingTotal
+@@ -161,7 +164,10 @@ func toolOutputDiffContentFromUnified(sty *styles.Styles, content string, width
+ 	if expanded {
+ 		maxLines = len(lines)
+ 	}
+-	if len(lines) > maxLines && !expanded {
++	switch {
++	case hidden > 0:
++		combined = combined + "\n" + diffTruncationNotice(sty, width, hidden)
++	case len(lines) > maxLines && !expanded:
+ 		truncMsg := sty.Tool.DiffTruncation.
+ 			Width(bodyWidth).
+ 			Render(fmt.Sprintf(assistantMessageTruncateFormat, len(lines)-maxLines))

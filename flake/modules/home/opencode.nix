@@ -65,7 +65,9 @@ let
 
     patches = [
       ../../patches/crush-0.95.0-reasoning-only.patch
-      ../../patches/crush-0.95.0-diff-render.patch
+      ../../patches/crush-0.95.0-bound-render.patch
+      ../../patches/crush-0.95.0-context-ceiling.patch
+      ../../patches/crush-0.95.0-truncate-fallback.patch
     ];
 
     # Only the root main package: the tree also carries
@@ -220,7 +222,13 @@ let
     text = builtins.toJSON {
       "$schema" = "https://charm.land/crush.json";
       models = {
-        large = { model = defaultGoModel; provider = "opencode-go"; };
+        # The catalogue allows 384000 output tokens for this model, and one
+        # reply that long can carry a session past the compaction ceiling
+        # before the trigger is evaluated, so cap it. This rides the model slot
+        # rather than a providers.<id>.models entry, because declaring a model
+        # id replaces the catalogue entry wholesale and would drop its
+        # reasoning and attachment flags.
+        large = { model = defaultGoModel; provider = "opencode-go"; max_tokens = 65536; };
         small = { model = defaultGoModel; provider = "opencode-go"; };
       };
       providers = {

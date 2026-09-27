@@ -1,0 +1,56 @@
+diff --git a/internal/agent/agent.go b/internal/agent/agent.go
+--- a/internal/agent/agent.go
++++ b/internal/agent/agent.go
+@@ -54,9 +54,17 @@
+ 	DefaultSessionName = "Untitled Session"
+ 
+ 	// Constants for auto-summarization thresholds
+-	largeContextWindowThreshold = 200_000
+-	largeContextWindowBuffer    = 20_000
+-	smallContextWindowRatio     = 0.2
++	largeContextWindowBuffer = 20_000
++	smallContextWindowRatio  = 0.2
++
++	// safeContextCeiling is the session size compaction triggers at,
++	// whatever window a model declares. A declared window is not a usable
++	// one: opencode-go's deepseek-v4.1-flash advertises 1_000_000 tokens and
++	// the backend starts rejecting the session at about 660_000, so a
++	// threshold derived from the declaration never fires before the wall.
++	// The ratio and the output-size floor below still apply, so smaller
++	// windows keep scaling down.
++	safeContextCeiling = 500_000
+ )
+ 
+ var userAgent = fmt.Sprintf("Charm-Crush/%s (https://charm.land/crush)", version.Version)
+@@ -1044,11 +1052,27 @@
+ 				}
+ 				tokens := currentSession.CompletionTokens + currentSession.PromptTokens
+ 				remaining := cw - tokens
+-				var threshold int64
+-				if cw > largeContextWindowThreshold {
++				// Declared windows are not usable windows, so trigger on an absolute
++				// ceiling and keep the proportional reserve for smaller windows. The
++				// output cap covers one maximum-length reply, which matters because a
++				// model's output allowance can itself be hundreds of thousands of tokens,
++				// and the clamp keeps it from reserving more than half of a small window.
++				threshold := int64(float64(cw) * smallContextWindowRatio)
++				if threshold < largeContextWindowBuffer {
+ 					threshold = largeContextWindowBuffer
+-				} else {
+-					threshold = int64(float64(cw) * smallContextWindowRatio)
++				}
++				if ceiling := cw - safeContextCeiling; ceiling > threshold {
++					threshold = ceiling
++				}
++				outputCap := largeModel.CatwalkCfg.DefaultMaxTokens
++				if largeModel.ModelCfg.MaxTokens != 0 {
++					outputCap = largeModel.ModelCfg.MaxTokens
++				}
++				if outputCap > threshold {
++					threshold = outputCap
++				}
++				if half := cw / 2; threshold > half {
++					threshold = half
+ 				}
+ 				if (remaining <= threshold) && !a.disableAutoSummarize {
+ 					shouldSummarize = true
