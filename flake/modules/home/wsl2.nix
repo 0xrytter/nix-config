@@ -13,6 +13,39 @@ let
     repo = "nixpkgs";
     rev = "a32edd7654519351e48e80372a928df336394670";
   }) { system = pkgs.system; };
+
+  # The /model picker lineup, declared rather than discovered. Gateway discovery
+  # keeps only ids containing "claude" or "anthropic", and Hyper's open-weight
+  # ids contain neither, so discovery drops every model Hyper serves. The shared
+  # ~/.claude/settings.json is also allowlisted to three Anthropic ids, which
+  # would block these from being selected at all.
+  #
+  # Passed with --settings (which merges over the shared file for this session)
+  # so the lineup stays on this machine: the NixOS hosts share
+  # claude-settings.json and still talk to Anthropic.
+  hyperClaudeSettings = pkgs.writeText "claude-hyper-settings.json" (builtins.toJSON {
+    availableModels = [ "deepseek-v4.1-flash" "kimi-k3" "glm-5.3-flash" ];
+    modelPicker = {
+      replaceBuiltInOptions = true;
+      options = [
+        {
+          model = "deepseek-v4.1-flash";
+          label = "DeepSeek V4.1 Flash";
+          description = "Fast and cheap - the default";
+        }
+        {
+          model = "kimi-k3";
+          label = "Kimi K3";
+          description = "Stronger reasoning for harder work";
+        }
+        {
+          model = "glm-5.3-flash";
+          label = "GLM 5.3 Flash";
+          description = "Fast and cheap";
+        }
+      ];
+    };
+  });
 in {
   imports = [
     ./common.nix
@@ -152,9 +185,9 @@ in {
   '';
 
   # Claude Code, routed through Charm Hyper. Hyper speaks the Anthropic Messages
-  # API, this machine's own Hyper key is the credential, and the three models in
-  # rotation ride the /model picker's slots: the session default plus the sonnet
-  # and haiku aliases. `command claude` skips this function, so a first-party
+  # API and this machine's own Hyper key is the credential; the three models in
+  # rotation come from hyperClaudeSettings above, which replaces the built-in
+  # picker lineup. `command claude` skips this function, so a first-party
   # Anthropic session is still one word away.
   #
   # The key is a real secret, so it is not declared here: seedHyperKey below
@@ -172,8 +205,7 @@ in {
     set -lx ANTHROPIC_MODEL deepseek-v4.1-flash
     set -lx ANTHROPIC_DEFAULT_SONNET_MODEL kimi-k3
     set -lx ANTHROPIC_DEFAULT_HAIKU_MODEL glm-5.3-flash
-    set -lx CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY 1
-    command claude $argv
+    command claude --settings ${hyperClaudeSettings} $argv
   '';
 
   # The Hyper key slot: an empty mode-600 file, created once so the operator only

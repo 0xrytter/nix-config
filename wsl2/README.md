@@ -238,9 +238,12 @@ mkdir -p ~/.config/opencode/secrets; chmod 700 ~/.config/opencode/secrets
 install -m 600 /dev/null ~/.config/opencode/secrets/hyper-local.key
 ```
 
-`claude` (and the `ai` abbreviation) then start against Hyper, with
-`deepseek-v4.1-flash` as the default model, `kimi-k3` on the `sonnet` slot and
-`glm-5.3-flash` on the `haiku` slot, so `/model` switches between them. Without
+`claude` (and the `ai` abbreviation) then start against Hyper: `deepseek-v4.1-flash`
+is the default, `kimi-k3` and `glm-5.3-flash` fill the `sonnet` and `haiku` slots,
+and `/model` shows all three in place of the built-in lineup
+(`hyperClaudeSettings` in `flake/modules/home/wsl2.nix`, handed over with
+`--settings`). Gateway discovery cannot do this for us - it keeps only model ids
+containing `claude` or `anthropic`, and Hyper serves open-weight models. Without
 the key the launcher refuses to start rather than quietly falling back to
 Anthropic, and `command claude` runs the plain binary if the first-party API is
 ever wanted instead.
