@@ -46,6 +46,36 @@ let
       ];
     };
   });
+
+  # cclaude: the stock Claude Code binary bootstrapped with Charm Hyper as the
+  # API provider. `claude` itself is left alone, so the upstream binary and the
+  # Anthropic login stay exactly as shipped and nothing shadows them.
+  #
+  # A Nix-generated bash executable rather than a fish function on purpose: the
+  # box runs the same wrapper shape under bash, and a real binary also works from
+  # scripts and from `herdr agent start`.
+  #
+  # The key is a real secret, so it is not declared here: seedHyperKey below
+  # creates the slot empty, and the wrapper reads the file at start, the same
+  # shape as the opencode-go launchers in modules/home/opencode.nix.
+  cclaude = pkgs.writeShellApplication {
+    name = "cclaude";
+    text = ''
+      key_file=${config.xdg.configHome}/opencode/secrets/hyper-local.key
+      if [ ! -s "$key_file" ]; then
+        echo "no Hyper key at $key_file (see wsl2/README.md, 'Agent credentials')" >&2
+        exit 1
+      fi
+      ANTHROPIC_BASE_URL=https://hyper.charm.land
+      ANTHROPIC_API_KEY="$(cat "$key_file")"
+      ANTHROPIC_MODEL=deepseek-v4.1-flash
+      ANTHROPIC_DEFAULT_SONNET_MODEL=kimi-k3
+      ANTHROPIC_DEFAULT_HAIKU_MODEL=glm-5.3-flash
+      export ANTHROPIC_BASE_URL ANTHROPIC_API_KEY ANTHROPIC_MODEL
+      export ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL
+      exec ${pkgs.claude-code}/bin/claude --settings ${hyperClaudeSettings} "$@"
+    '';
+  };
 in {
   imports = [
     ./common.nix
@@ -143,8 +173,10 @@ in {
     # package so a remote session runs the same build.
     herdr
     # Same claude-code the NixOS hosts carry. It is unfree, which is why the
-    # flake's allowUnfreePredicate names it alongside crush.
+    # flake's allowUnfreePredicate names it alongside crush. `claude` stays the
+    # stock binary; cclaude above is the Hyper-bootstrapped one.
     claude-code
+    cclaude
     # herdr plays its sound notifications by shelling out to an mp3-capable
     # player (paplay first on Linux) and silently does nothing when it finds
     # none. WSLg already runs the PulseAudio server at unix:/mnt/wslg/PulseServer,
@@ -188,38 +220,6 @@ in {
     set -lx CRUSH_CLIENT_SERVER 1
     command crush95 -H tcp://agent01:7799 $argv
     printf '\e]112\a\e]111\a'
-  '';
-
-  # Claude Code, routed through Charm Hyper. Hyper speaks the Anthropic Messages
-  # API and this machine's own Hyper key is the credential; the three models in
-  # rotation come from hyperClaudeSettings above, which replaces the built-in
-  # picker lineup. `command claude` skips this function, so a first-party
-  # Anthropic session is still one word away.
-  #
-  # The key is a real secret, so it is not declared here: seedHyperKey below
-  # creates the slot empty, and the launcher lifts the file into the environment
-  # at start, the same shape as the opencode-go launchers in
-  # modules/home/opencode.nix.
-  programs.fish.functions.claude = ''
-    set -l key ${config.xdg.configHome}/opencode/secrets/hyper-local.key
-    if not test -s $key
-      echo "no Hyper key at $key (see wsl2/README.md, 'Agent credentials')" >&2
-      return 1
-    end
-    set -lx ANTHROPIC_BASE_URL https://hyper.charm.land
-    set -lx ANTHROPIC_API_KEY (cat $key)
-    set -lx ANTHROPIC_MODEL deepseek-v4.1-flash
-    set -lx ANTHROPIC_DEFAULT_SONNET_MODEL kimi-k3
-    set -lx ANTHROPIC_DEFAULT_HAIKU_MODEL glm-5.3-flash
-    command claude --settings ${hyperClaudeSettings} $argv
-  '';
-
-  # First-party Claude Code, for the times the work wants an Anthropic model
-  # rather than a Hyper one. The same binary with none of the Hyper environment
-  # and no --settings override, so it reads the shared ~/.claude/settings.json
-  # and authenticates against Anthropic on the subscription login instead.
-  programs.fish.functions.cclaude = ''
-    command claude $argv
   '';
 
   # The Hyper key slot: an empty mode-600 file, created once so the operator only

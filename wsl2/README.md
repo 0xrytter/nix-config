@@ -221,7 +221,7 @@ The profile declares the harnesses but never their secrets. Each credential is a
 mode-600 file under a mode-700 directory that the launcher reads at start, so
 nothing secret is ever written into the Nix store.
 
-Claude Code is the default harness and routes through **Charm Hyper**. The
+Claude Code runs through **Charm Hyper** with the `cclaude` launcher. The
 profile seeds an empty key file for it (`seedHyperKey` in
 `flake/modules/home/wsl2.nix`), so the only thing left is to paste the machine's
 Hyper key in:
@@ -238,15 +238,14 @@ mkdir -p ~/.config/opencode/secrets; chmod 700 ~/.config/opencode/secrets
 install -m 600 /dev/null ~/.config/opencode/secrets/hyper-local.key
 ```
 
-`claude` (and the `ai` abbreviation) then start against Hyper: `deepseek-v4.1-flash`
-is the default, `kimi-k3` and `glm-5.3-flash` fill the `sonnet` and `haiku` slots,
-and `/model` shows all three in place of the built-in lineup
+`claude` stays the stock Anthropic binary, untouched, and `cclaude` is that same
+binary bootstrapped with Charm Hyper as the API provider: `deepseek-v4.1-flash`
+is the default model, `kimi-k3` and `glm-5.3-flash` fill the `sonnet` and `haiku`
+slots, and `/model` shows all three in place of the built-in lineup
 (`hyperClaudeSettings` in `flake/modules/home/wsl2.nix`, handed over with
 `--settings`). Gateway discovery cannot do this for us - it keeps only model ids
 containing `claude` or `anthropic`, and Hyper serves open-weight models. Without
-the key the launcher refuses to start rather than quietly falling back to
-Anthropic, and `command claude` runs the plain binary if the first-party API is
-ever wanted instead.
+the key `cclaude` refuses to start rather than quietly falling back to Anthropic.
 
 ---
 

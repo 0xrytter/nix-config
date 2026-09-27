@@ -1,4 +1,4 @@
-{ config, pkgs, agents, ... }: {
+{ config, lib, pkgs, agents, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -92,6 +92,158 @@
     '';
   };
 
+  # Multiplexer. Restored from git (dropped in fe169a4 for zellij); zellij stays
+  # installed but is no longer the WezTerm default_prog. Catppuccin replaces the
+  # old tmux-gruvbox plugin, so no extra flake input is needed.
+  #
+  # Clipboard: opencode writes its own OSC 52 to set the clipboard and also wraps
+  # a copy in a tmux passthrough DCS. `set-clipboard on` accepts the raw sequence
+  # from inside, `allow-passthrough on` lets the wrapped copy reach WezTerm, and
+  # the `Ms` override gives tmux the capability to emit OSC 52 itself. WezTerm
+  # owns the actual Windows clipboard.
+  programs.tmux = {
+    enable = true;
+    prefix = "C-Space";
+    baseIndex = 1;
+    mouse = true;
+    keyMode = "vi";
+    terminal = "tmux-256color";
+    plugins = with pkgs.tmuxPlugins; [
+      sensible
+      vim-tmux-navigator
+      yank
+      resurrect
+      # Discoverability: prefix + Space opens a which-key style popup menu of the
+      # common actions. XDG mode is needed because the nix store is read-only and
+      # the plugin otherwise writes its config/init next to itself.
+      {
+        plugin = tmux-which-key;
+        extraConfig = ''
+          set -g @tmux-which-key-xdg-enable 1
+        '';
+      }
+      # catppuccin: the README "Recommended Default Configuration" only sets the
+      # flavour and rounded windows. Window text/number come from plugin defaults.
+      {
+        plugin = catppuccin;
+        extraConfig = ''
+          set -g @catppuccin_flavor "mocha"
+          set -g @catppuccin_window_status_style "rounded"
+        '';
+      }
+      {
+        plugin = continuum;
+        extraConfig = ''
+          set -g @continuum-save-interval '5'
+        '';
+      }
+    ];
+    extraConfig = ''
+      set -g default-shell "${pkgs.fish}/bin/fish"
+      set-option -sa terminal-overrides ",xterm*:Tc"
+      set-option -g update-environment "SSH_AUTH_SOCK"
+      set -g history-limit 50000
+
+      # No auto-restore: resurrect's restore.sh ran on every start and brought
+      # back the last saved session, which predates this config (Sep 18, the
+      # pre-zellij layout), so each launch opened a stale 10-window session
+      # instead of a clean one. Saving stays on (continuum, 5 min); restoring is
+      # manual (prefix + Ctrl-r), and the old saves are kept on disk.
+
+      # Status bar: catppuccin v2 declares modules as @catppuccin_status_<name>,
+      # and they only exist once the plugin has loaded. home-manager emits plugin
+      # run-shells before this extraConfig, so this is the correct side of that
+      # ordering. README "Recommended Default Configuration" module list, minus
+      # cpu and battery: both come up empty on WSL (no battery, and the cpu
+      # sampler reads nothing here), so they only added blank segments.
+      set -g status-right-length 100
+      set -g status-left-length 100
+      set -g status-left ""
+      set -g status-right "#{E:@catppuccin_status_application}"
+      set -ag status-right "#{E:@catppuccin_status_session}"
+      set -ag status-right "#{E:@catppuccin_status_uptime}"
+
+      # Two Catppuccin choices don't compose with its own bar, so both are
+      # corrected here (neither is caused by the additions in this file):
+      #   * message-style uses bg=default: its CTP_MESSAGE_BACKGROUND expands
+      #     @catppuccin_status_background, which is the literal string "default",
+      #     so prompts are painted the terminal's base colour on the mantle bar.
+      #     Its fg is also @thm_teal, a colour that appears nowhere else, so the
+      #     kill/confirm prompt reads as foreign text. Pin to the bar and use the
+      #     bar's own text colour.
+      #   * window-status-bell-style / -activity-style set a whole-pill
+      #     background, but window-status-format has a #[none] reset immediately
+      #     before the window number, so that number inherits the bell style and
+      #     renders as a yellow-on-crust slab inside a pill whose rounded notches
+      #     are pinned to the bar colour (the "cutout"). Keep the background and
+      #     recolour only the number.
+      #   * and with no width/fill the prompt is drawn as a partial band over the
+      #     bar, so it slices through whatever pill sits under it. fill= makes it
+      #     cover the full width, so the prompt replaces the bar cleanly instead
+      #     of cutting a pill in half.
+      set -gF message-style "fg=#{@thm_fg},bg=#{@thm_mantle},fill=#{@thm_mantle},align=centre"
+      set -gF message-command-style "fg=#{@thm_fg},bg=#{@thm_mantle},fill=#{@thm_mantle},align=centre"
+      set -gF window-status-bell-style "bg=default,fg=#{@thm_yellow}"
+      set -gF window-status-activity-style "bg=default,fg=#{@thm_lavender}"
+
+      set -g set-clipboard on
+      set -g allow-passthrough on
+      set -as terminal-overrides ',*:Ms=\E]52;%p1%s;%p2%s\007'
+
+      # Ban cursor-colour overrides at the source. tmux relays an application's
+      # OSC 12 to the terminal through the Cs/Cr capabilities, and has no
+      # per-pane model for the cursor (it is device state, not a cell colour), so
+      # an app that sets it, or fails to reset it, leaves the terminal's cursor
+      # coloured until something else changes it. Cancelling the capabilities
+      # stops tmux emitting those escapes at all. Measured with a pane writing
+      # OSC 12: without this, tmux relays it; with it, the client sees zero
+      # cursor-colour escapes. Trade: apps (and tmux's own cursor-colour option)
+      # can no longer theme the cursor.
+      set -as terminal-overrides ',*:Cs@:Cr@'
+
+      set -g automatic-rename on
+      set -g automatic-rename-format "#{b:pane_current_path}"
+
+      bind h select-pane -L
+      bind j select-pane -D
+      bind k select-pane -U
+      bind l select-pane -R
+
+      set -g pane-base-index 1
+      set-window-option -g pane-base-index 1
+      set-option -g renumber-windows on
+
+      bind -n M-Left select-pane -L
+      bind -n M-Right select-pane -R
+      bind -n M-Up select-pane -U
+      bind -n M-Down select-pane -D
+
+      bind -n S-Left previous-window
+      bind -n S-Right next-window
+      bind -n M-H previous-window
+      bind -n M-L next-window
+
+      bind-key -T copy-mode-vi v send-keys -X begin-selection
+      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+      bind '"' split-window -v -c "#{pane_current_path}"
+      bind % split-window -h -c "#{pane_current_path}"
+      bind c new-window -c "#{pane_current_path}"
+
+      bind-key s display-popup -E -w 80% -h 80% 'sesh connect $(sesh list | fzf --preview "sesh preview {}" --bind "ctrl-d:execute(tmux kill-session -t {})+reload(sesh list)")'
+
+      # fzf ships its own defaults, which colour the pointer/marker/highlight
+      # with ANSI red (that red pointer in the sesh popup is fzf's, not ours).
+      # Give fzf Catppuccin Mocha's palette instead. Set on the tmux server's
+      # global environment because popups inherit that, not the client's shell.
+      set-environment -g FZF_DEFAULT_OPTS "--color=bg+:#313244,bg:#1E1E2E,spinner:#F5E0DC,hl:#F38BA8,fg:#CDD6F4,header:#F38BA8,info:#CBA6F7,pointer:#F5E0DC,marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8,selected-bg:#45475A,border:#6C7086,label:#CDD6F4"
+      bind-key b run-shell 'if [ "$(tmux display-message -p "#W")" = "scratch" ]; then tmux last-window; else tmux capture-pane -peS -32768 > /tmp/tmux-scrollback-#{session_id}; tmux kill-window -t scratch 2>/dev/null; tmux new-window -n scratch "nvim -n + /tmp/tmux-scrollback-#{session_id}"; fi'
+
+      set-hook -g after-select-pane 'refresh-client -S'
+    '';
+  };
+
   programs.starship.enable = true;
 
 
@@ -170,6 +322,26 @@
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 
+  # tmux-which-key menu; see the plugin entry in programs.tmux above. XDG mode
+  # makes the plugin read this and write its generated init.tmux under
+  # ~/.local/share, rather than into its own (read-only) store path.
+  xdg.configFile."tmux/plugins/tmux-which-key/config.yaml".source =
+    ../../config/tmux/which-key.yaml;
+
+  # tmux-which-key autobuilds its menu from config.yaml into init.tmux, but it
+  # first copies its example init into that path, and the example comes from the
+  # read-only nix store, so the copied file is unwritable and build.py dies with
+  # EACCES (which, under `set -e`, also skips the `tmux source-file` that would
+  # apply the menu). Pre-create it writable so the copy is skipped.
+  home.activation.ensureWhichKeyInit = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    _d="${config.home.homeDirectory}/.local/share/tmux/plugins/tmux-which-key"
+    $DRY_RUN_CMD mkdir -p "$_d"
+    if [ ! -e "$_d/init.tmux" ]; then
+      $DRY_RUN_CMD touch "$_d/init.tmux"
+    fi
+    $DRY_RUN_CMD chmod u+w "$_d/init.tmux"
+  '';
+
   home.file.".ideavimrc".source = ../../config/ideavimrc;
 
   home.file.".claude/hooks" = {
@@ -179,6 +351,10 @@
   home.file.".claude/settings.json".source = ../../config/claude-settings.json;
   home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
   home.file.".claude/caps.json".source = ../../config/caps.json;
+  # The one rules file, loaded into every Claude Code session in every project on
+  # every host (user scope). Same source as the crush/opencode context paths, so
+  # there stays exactly one copy to edit.
+  home.file.".claude/CLAUDE.md".source = ../../config/agent-rules.md;
 
   home.packages = with pkgs; [
     fd
