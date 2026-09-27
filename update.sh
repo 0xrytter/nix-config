@@ -4,18 +4,28 @@ set -euo pipefail
 sudo -v
 sudo git config --global --add safe.directory "$(pwd)"
 
-read -p "Enter hostname (DIY-Desktop/T480/patrick-desktop) or Enter for $(hostname -s): " input
-HOSTNAME="${input:-$(hostname -s)}"
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  PROFILE="wsl2"
+else
+  read -p "Enter hostname (DIY-Desktop/T480/patrick-desktop) or Enter for $(hostname -s): " input
+  PROFILE="${input:-$(hostname -s)}"
+fi
 
 echo "Updating flake..."
 nix flake update --flake "./flake"
 
 echo "Rebuilding with updated flake..."
-sudo nixos-rebuild switch --flake "./flake#$HOSTNAME"
+if [ "$PROFILE" = "wsl2" ]; then
+  home-manager switch --flake "./flake#wsl2"
+else
+  sudo nixos-rebuild switch --flake "./flake#$PROFILE"
+fi
 
-echo "Cleaning old generations (keeping last 3)..."
-sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations +3
-sudo nix-collect-garbage
+if [ "$PROFILE" != "wsl2" ]; then
+  echo "Cleaning old generations (keeping last 3)..."
+  sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations +3
+  sudo nix-collect-garbage
+fi
 
 echo "Optimizing store..."
 sudo nix-store --optimise

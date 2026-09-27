@@ -10,11 +10,15 @@ config.window_close_confirmation = "NeverPrompt"
 -- Go directly into Ubuntu WSL
 config.default_domain = "WSL:Ubuntu-24.04"
 
--- Boot tmux. The tmux config (Catppuccin status bar, OSC 52 clipboard) lives in
--- flake/modules/home/common.nix; zellij stays installed but is not the default.
+-- Boot herdr, the workspace manager the agents live in. Bare `herdr` launches or
+-- attaches to the persistent default session, so this attaches to the
+-- workspaces already there rather than starting a fresh one. Herdr's own config
+-- is declared in flake/config/herdr.toml; see wsl2/HERDR.md for the whole setup.
 --  * Via a login shell with an absolute path: WezTerm's WSL domain inherits the
 --    distro PATH, which has no nix profile, so a bare name resolves to
---    /usr/bin and the login shell is what restores the profile.
+--    /usr/bin and the login shell is what restores the profile. The panes herdr
+--    spawns inherit that PATH, which is what makes nix-installed agents such as
+--    codex resolvable inside them.
 local wsl_domains = wezterm.default_wsl_domains()
 
 for _, domain in ipairs(wsl_domains) do
@@ -22,7 +26,7 @@ for _, domain in ipairs(wsl_domains) do
     domain.default_prog = {
       "/bin/bash",
       "-lc",
-      "exec /home/rytter/.nix-profile/bin/tmux new-session -A -s main",
+      "exec /home/rytter/.nix-profile/bin/herdr",
     }
   end
 end
@@ -66,14 +70,8 @@ config.window_decorations = "TITLE | RESIZE"
 -- redraws), so the CPU renderer is the stable path even though it costs more.
 config.front_end = "Software"
 
--- Ctrl+Space -> NUL, matching what tmux expects for C-Space
 config.keys = {
-  {
-    key = "Space",
-    mods = "CTRL",
-    action = wezterm.action.SendString("\x00"),
-  },
-  -- Ctrl+Shift+Z: plain WSL shell in a new window, no Zellij. Same domain and
+  -- Ctrl+Shift+Z: plain WSL shell in a new window, no herdr. Same domain and
   -- environment as the default window, minus the multiplexer — for comparing
   -- behaviour (scroll smoothness especially) with and without it.
   {

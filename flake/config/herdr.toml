@@ -1,0 +1,10 @@
+# Herdr configuration, declared here so every client host runs the same thing.
+#
+# On the machine this is a read-only store symlink, so herdr's own settings
+# editor cannot write it. That is deliberate: change a setting here and run
+# `home-manager switch` instead. Machine profiles (`herdr machine add`) are
+# runtime state rather than configuration, so they are not declared here.
+#
+# onboarding is the one key herdr writes by itself, so it is spelled out and
+# never needs a write.
+onboarding = false

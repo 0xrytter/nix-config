@@ -9,7 +9,7 @@ git config --global --add safe.directory "$ROOT"
 echo "Activating home-manager profile 'wsl2'..."
 home-manager switch --flake "$ROOT/flake#wsl2"
 
-# Ensure fish is the login shell so WSL and tmux both start fish.
+# Ensure fish is the login shell so WSL and herdr panes both start fish.
 # Requires sudo the first time (writes /etc/shells + updates /etc/passwd).
 FISH_PATH="$(command -v fish || true)"
 if [ -n "$FISH_PATH" ]; then

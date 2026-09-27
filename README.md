@@ -16,6 +16,7 @@ and a home-manager-only profile for Ubuntu on WSL2.
 | `bash wsl2/docker-setup.sh` | Install Docker Engine and run it as a daemon |
 | `bash wsl2/docker-restart.sh` | Restart the Docker daemon |
 | `bash wsl2/tailscale-setup.sh` | Link and start the tailscale daemon and join the tailnet, so the fleet's tailnet-only services answer here |
+| `wsl2/HERDR.md` | How herdr is declared and how to add a machine (workstation + agent box) |
 
 NixOS machines: `rebuild.sh` compiles both the system and the home-manager
 portion in one go. Standalone home-manager profiles are exposed for every host
@@ -25,7 +26,7 @@ home config without a full system rebuild.
 ## WSL2 (Ubuntu)
 
 Standalone home-manager profile — no NixOS, no graphical UI. You get fish,
-neovim, lazygit, lazydocker, opencode, tmux, nerd fonts and the usual dotfiles.
+neovim, lazygit, lazydocker, opencode, herdr, nerd fonts and the usual dotfiles.
 
 ### 1. On a fresh Ubuntu WSL2 distro
 
