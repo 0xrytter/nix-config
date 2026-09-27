@@ -28,10 +28,12 @@
   let
     system = "x86_64-linux";
     agents = llm-agents.packages.${system};
-    # crush is FSL-1.1-MIT (unfree); allow just it, not all unfree packages.
+    # crush is FSL-1.1-MIT (unfree) and claude-code is under Anthropic's
+    # unfree terms; allow just those two, not all unfree packages.
     pkgs = import nixpkgs {
       inherit system;
-      config.allowUnfreePredicate = pkg: (nixpkgs.lib.getName pkg) == "crush";
+      config.allowUnfreePredicate = pkg:
+        builtins.elem (nixpkgs.lib.getName pkg) [ "crush" "claude-code" ];
     };
     homeManagerModule = users: {
       home-manager.useGlobalPkgs = true;
