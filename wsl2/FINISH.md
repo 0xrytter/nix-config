@@ -59,16 +59,23 @@ in step 9 of `wsl2/README.md`.
 Windows stays off the tunnel either way — a browser there still needs an SSH
 forward for the fleet's UI, documented in the iacthing repository's `ACCESS.md`.
 
-## 4. Paste the Hyper key
+## 4. Unlock the vault
 
 Claude Code is the default harness and routes through Charm Hyper, but the key is
-a secret the profile will not hold. It seeds the slot file empty, so paste this
-machine's Hyper key into it:
+a secret the profile will not hold and no plaintext copy of it is kept. It lives
+encrypted in the `secrets` repository, and the single age anchor that opens it is
+stored only in the password manager.
 
-```
-nvim ~/.config/opencode/secrets/hyper-local.key
+Put that anchor on the clipboard from the password manager and run:
+
+```bash
+unlock
 ```
 
-The launcher refuses to start while that file is empty, and `command claude` runs
-the plain binary if the first-party API is ever wanted instead. Details are in
-section 7 of `wsl2/README.md` ("Agent credentials").
+It takes only the `AGE-SECRET-KEY-1...` line, verifies the derived public key,
+installs it at `$XDG_RUNTIME_DIR/sops/age/keys.txt` (mode 600, tmpfs), and loads
+the ssh key into the agent. One paste per session - tmpfs does not survive a
+reboot. Until it runs, `cclaude` refuses to start and `sec`/`secfile` report
+*"anchor not unlocked"*; `command claude` runs the plain binary if the
+first-party API is ever wanted instead. Details are in section 7 of
+`wsl2/README.md` ("Agent credentials").

@@ -73,6 +73,33 @@ supervision replaces practice — so split the work by whose hands it needs:
 - When a value is already present in the environment (script, .env, session),
   reference it by name, never re-echo it.
 
+### On this dev environment — no plaintext secrets at rest
+
+Agents here run on a machine that holds **no plaintext credential on disk**.
+Everything lives encrypted in `~/src/secrets` (the workstation's vault) and
+`iacthing/secrets/<host>.enc.yaml` (the fleet), and one age anchor is pasted into
+tmpfs per session by `unlock`. Work with that, never around it:
+
+- **Fetch, never hardcode.** `sec <name>` returns a value; `secfile <name>`
+  returns a tmpfs path. The old plaintext locations are gone
+  (`~/.config/opencode/secrets/`, `~/.ssh/id_ed25519`, `~/.config/iacthing/*.key`),
+  so a consumer still naming one is a **bug to fix, not a path to recreate**.
+- **"anchor not unlocked, run `unlock`" is the human's step, not a bug.** Report
+  it and stop. Never make it go away by writing the key, a copy of the anchor, or
+  the decrypted value anywhere.
+- **`~/.config/sops/age/keys.txt` must stay absent.** It is the path `sops` falls
+  back to when `SOPS_AGE_KEY_FILE` is unset *or* wrong, so a copy there silently
+  makes `unlock` decorative and puts the master key back on disk. Never create it.
+- **Never materialise a decrypted value**: no `sops -d` written to a file, no
+  `| tee`, no redirect into the working tree, no new `~/.config/<tool>/secrets/`
+  dotfile, no value in argv where a process list can read it. `sec` and `secfile`
+  exist precisely so no consumer needs one.
+- **A new credential goes in the vault** (`sops secrets/personal.enc.yaml`), not
+  in a plaintext file that outlives the session.
+- **Know which trust group you are editing.** A name can exist in two stores
+  holding *different* values — the workstation's `github-token` is not the agent
+  box's `github-token`. Never "sync" one to the other.
+
 ## Code discipline — write only what the task needs
 
 Be a lazy senior developer. Lazy means efficient, not careless. The best code

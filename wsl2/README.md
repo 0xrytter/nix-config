@@ -217,35 +217,44 @@ After this step, the temporary Git shell is no longer important.
 
 ### Agent credentials
 
-The profile declares the harnesses but never their secrets. Each credential is a
-mode-600 file under a mode-700 directory that the launcher reads at start, so
-nothing secret is ever written into the Nix store.
+The profile declares the harnesses but never their secrets, and nothing secret
+is ever written into the Nix store. Credentials live encrypted in the `secrets`
+repository (`~/src/secrets/secrets/personal.enc.yaml`) and are fetched at the
+moment of use by two accessors declared in `flake/modules/home/secrets.nix`:
 
-Claude Code runs through **Charm Hyper** with the `cclaude` launcher. The
-profile seeds an empty key file for it (`seedHyperKey` in
-`flake/modules/home/wsl2.nix`), so the only thing left is to paste the machine's
-Hyper key in:
+| Command | Returns |
+| --- | --- |
+| `sec <name>` | the value on stdout — for a consumer that wants an env var |
+| `secfile <name>` | a tmpfs path, mode 0400 — for the few that need a path |
 
-```bash
-nvim ~/.config/opencode/secrets/hyper-local.key
-```
+Both decrypt with the **age anchor**, which is not on disk. Put it on the
+clipboard from the password manager and run `unlock`: it takes only the
+`AGE-SECRET-KEY-1...` line, verifies the derived public key, and installs it at
+`$XDG_RUNTIME_DIR/sops/age/keys.txt` (mode 600, tmpfs — gone at reboot, so one
+paste per session). `unlock` then loads the ssh key into the agent. Until it
+runs, `sec` and `secfile` refuse with *"anchor not unlocked"* rather than handing
+a consumer an empty credential.
 
-If the file is not there yet - an older profile, or a checkout that has not been
-switched - create it first:
+**Leave `~/.config/sops/age/keys.txt` absent.** It is the path `sops` falls back
+to when `SOPS_AGE_KEY_FILE` is unset *or* points at a key that does not work, so
+a copy there silently makes the paste optional and puts the master key back on
+disk. With that path empty, the paste is what unlocks the environment.
 
-```bash
-mkdir -p ~/.config/opencode/secrets; chmod 700 ~/.config/opencode/secrets
-install -m 600 /dev/null ~/.config/opencode/secrets/hyper-local.key
-```
+Claude Code runs through **Charm Hyper** with the `cclaude` launcher, which
+fetches its key with `sec hyper-api-key` at start. `claude` stays the stock
+Anthropic binary, untouched, and `cclaude` is that same binary bootstrapped with
+Charm Hyper as the API provider: `deepseek-v4.1-flash` is the default model,
+`kimi-k3` and `glm-5.3-flash` fill the `sonnet` and `haiku` slots, and `/model`
+shows all three in place of the built-in lineup (`hyperClaudeSettings` in
+`flake/modules/home/wsl2.nix`, handed over with `--settings`). Gateway discovery
+cannot do this for us - it keeps only model ids containing `claude` or
+`anthropic`, and Hyper serves open-weight models. Without an anchor `cclaude`
+refuses to start rather than quietly falling back to Anthropic.
 
-`claude` stays the stock Anthropic binary, untouched, and `cclaude` is that same
-binary bootstrapped with Charm Hyper as the API provider: `deepseek-v4.1-flash`
-is the default model, `kimi-k3` and `glm-5.3-flash` fill the `sonnet` and `haiku`
-slots, and `/model` shows all three in place of the built-in lineup
-(`hyperClaudeSettings` in `flake/modules/home/wsl2.nix`, handed over with
-`--settings`). Gateway discovery cannot do this for us - it keeps only model ids
-containing `claude` or `anthropic`, and Hyper serves open-weight models. Without
-the key `cclaude` refuses to start rather than quietly falling back to Anthropic.
+`flake/config/agent-rules.md` is the agent system prompt, deployed to
+`~/.claude/CLAUDE.md`. It tells the agents the same thing: never create a
+plaintext secret, fetch with `sec`/`secfile`, and treat a locked anchor as the
+user's step rather than something to work around.
 
 ---
 
@@ -814,7 +823,7 @@ The complete setup is:
 9. Start a temporary Nix shell containing Git
 10. Clone nix-config
 11. Run ./wsl2/bootstrap.sh
-12. Paste the Hyper key into ~/.config/opencode/secrets/hyper-local.key (section 7, "Agent credentials")
+12. Put the age anchor on the clipboard and run `unlock` (section 7, "Agent credentials")
 13. Run ./wsl2/docker-setup.sh
 14. Run ./wsl2/tailscale-setup.sh (it joins the tailnet and prints the URL to authorise)
 15. Install JetBrainsMono Nerd Font on Windows
