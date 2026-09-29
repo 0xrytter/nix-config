@@ -37,14 +37,6 @@
       set -gx EDITOR nvim
       set -gx VISUAL nvim
       fish_vi_key_bindings
-
-      if not set -q SSH_AUTH_SOCK
-          eval (ssh-agent -c)
-          # Identities come from the vault via `unlock`, not from ~/.ssh. This
-          # only picks up a default ~/.ssh identity if one still exists, and is
-          # silent when none does.
-          ssh-add 2>/dev/null
-      end
     '';
     shellAbbrs = {
       g = "git";
@@ -108,6 +100,46 @@
       bash -c "cd $root && bash update.sh"
     '';
   };
+
+  # One ssh-agent for the whole session, owned by systemd.
+  #
+  # This replaces a per-shell agent. Every fish shell used to run
+  # `eval (ssh-agent -c)` when SSH_AUTH_SOCK was unset, so a session accumulated a
+  # dozen agents and exactly one of them — the shell you happened to type `unlock`
+  # in — held the key. A bash login shell started none at all, which is why
+  # herdr's agent-box endpoint failed at startup with "Permission denied
+  # (publickey)": WezTerm boots `bash -lc`, so herdr inherited no agent and its
+  # ssh could never see a key, whenever the unlock happened.
+  #
+  # A fixed socket with one owner fixes both: `unlock` in any shell populates the
+  # agent that every shell already points at, and panes stop starting empty
+  # agents of their own. The key is also safer here than it was as a file —
+  # ssh-agent cannot export a private key, so `cat` has nothing to read.
+  #
+  # No Restart on purpose. Restarting the agent would silently discard the loaded
+  # key, and an empty agent is indistinguishable from a locked one — the failure
+  # would surface later as an auth error somewhere else.
+  systemd.user.services.ssh-agent = {
+    Unit = {
+      Description = "SSH agent, one per session";
+      Documentation = [ "man:ssh-agent(1)" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.openssh}/bin/ssh-agent -D -a %t/ssh-agent.sock";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
+
+  # That socket, exported to fish. conf.d rather than interactiveShellInit so
+  # non-interactive fish gets it too — the tmux hooks and herdr's panes are not
+  # all interactive. The boot script exports the same path for bash, which is
+  # what herdr and everything it spawns inherit.
+  xdg.configFile."fish/conf.d/21-ssh-agent.fish".text = ''
+    if set -q XDG_RUNTIME_DIR
+      set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.sock"
+    end
+  '';
 
   # Multiplexer. Restored from git (dropped in fe169a4 for zellij); zellij stays
   # installed but is no longer the WezTerm default_prog. Catppuccin replaces the
