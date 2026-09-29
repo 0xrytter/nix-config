@@ -69,11 +69,19 @@ let
         exit 1
       fi
       ANTHROPIC_BASE_URL=https://hyper.charm.land
-      ANTHROPIC_MODEL=deepseek-v4.1-flash
-      ANTHROPIC_DEFAULT_SONNET_MODEL=kimi-k3
-      ANTHROPIC_DEFAULT_HAIKU_MODEL=glm-5.3-flash
+      # Everything a session starts on its own runs on DeepSeek: every tier
+      # alias (an agent asking for "sonnet" got Kimi K3 without showing it)
+      # and every subagent, whatever model its definition names. Kimi K3 and
+      # GLM stay in the /model picker, for a human to choose.
+      model=deepseek-v4.1-flash
+      ANTHROPIC_MODEL=$model
+      ANTHROPIC_DEFAULT_OPUS_MODEL=$model
+      ANTHROPIC_DEFAULT_SONNET_MODEL=$model
+      ANTHROPIC_DEFAULT_HAIKU_MODEL=$model
+      CLAUDE_CODE_SUBAGENT_MODEL=$model
       export ANTHROPIC_BASE_URL ANTHROPIC_API_KEY ANTHROPIC_MODEL
-      export ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL
+      export ANTHROPIC_DEFAULT_OPUS_MODEL ANTHROPIC_DEFAULT_SONNET_MODEL
+      export ANTHROPIC_DEFAULT_HAIKU_MODEL CLAUDE_CODE_SUBAGENT_MODEL
       exec ${pkgs.claude-code}/bin/claude --settings ${hyperClaudeSettings} "$@"
     '';
   };
