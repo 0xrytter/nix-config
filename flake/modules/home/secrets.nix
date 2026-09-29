@@ -52,13 +52,19 @@ let
       mkdir -p "$dir"
       chmod 700 "$dir"
       out="$dir/$1"
+      # Write beside the target and rename over it. Writing in place fails on
+      # the second call: the previous run left the file at 0400, and the owner
+      # has no write bit either — rename(2) only needs the directory writable.
+      # secfile has to be re-runnable; shell hooks call it on every entry.
+      tmp="$(mktemp "$dir/.$1.XXXXXX")"
       # Value goes straight through the shell, never to a terminal or a log.
-      if ! sops --decrypt --extract "[\"$1\"]" ${secretsFile} > "$out"; then
-        rm -f "$out"
+      if ! sops --decrypt --extract "[\"$1\"]" ${secretsFile} > "$tmp"; then
+        rm -f "$tmp"
         echo "secfile: no such key: $1" >&2
         exit 1
       fi
-      chmod 400 "$out"
+      chmod 400 "$tmp"
+      mv -f "$tmp" "$out"
       echo "$out"
     '';
   };
