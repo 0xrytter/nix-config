@@ -26,7 +26,10 @@
 
       if not set -q SSH_AUTH_SOCK
           eval (ssh-agent -c)
-          ssh-add
+          # Identities come from the vault via `unlock`, not from ~/.ssh. This
+          # only picks up a default ~/.ssh identity if one still exists, and is
+          # silent when none does.
+          ssh-add 2>/dev/null
       end
     '';
     shellAbbrs = {
@@ -365,7 +368,6 @@
     ssh-to-age
     wl-clipboard
     # AI coding agents
-    agents.opencode
     t3code
     # formatters for neovim/conform
     stylua

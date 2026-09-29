@@ -6,7 +6,7 @@
 
   imports = [
     ../../modules/home/wsl2.nix
-    ../../modules/home/opencode.nix
+    ../../modules/home/secrets.nix
   ];
 
   programs.git.settings.user = {
@@ -30,17 +30,5 @@
 
   programs.fish.functions.cdm = ''
     cd (fd -H -t f ".$argv[1]" ~ --max-results 1 | xargs dirname)
-  '';
-
-  # transitional: superseded by the generic `ocgo N` from modules/home/opencode.nix.
-  # Remove once the new system is confirmed working.
-  programs.fish.functions.ocgo1 = ''
-    set -lx OPENCODE_CONFIG ${config.xdg.configHome}/opencode/profiles/go-workspace-1.json
-    opencode $argv
-  '';
-
-  programs.fish.functions.ocgo2 = ''
-    set -lx OPENCODE_CONFIG ${config.xdg.configHome}/opencode/profiles/go-workspace-2.json
-    opencode $argv
   '';
 }

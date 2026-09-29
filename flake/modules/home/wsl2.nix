@@ -55,19 +55,20 @@ let
   # box runs the same wrapper shape under bash, and a real binary also works from
   # scripts and from `herdr agent start`.
   #
-  # The key is a real secret, so it is not declared here: seedHyperKey below
-  # creates the slot empty, and the wrapper reads the file at start, the same
-  # shape as the opencode-go launchers in modules/home/opencode.nix.
+  # The key is no longer a file slot on disk: it is fetched from the vault at
+  # start by `sec` (see modules/home/secrets.nix), so nothing plaintext sits in
+  # the home directory and a locked anchor aborts here with `sec`'s message
+  # rather than handing Claude Code an empty key. `sec` resolves from PATH — it
+  # is a home.package on this host.
   cclaude = pkgs.writeShellApplication {
     name = "cclaude";
     text = ''
-      key_file=${config.xdg.configHome}/opencode/secrets/hyper-local.key
-      if [ ! -s "$key_file" ]; then
-        echo "no Hyper key at $key_file (see wsl2/README.md, 'Agent credentials')" >&2
+      ANTHROPIC_API_KEY="$(sec hyper-api-key)"
+      if [ -z "$ANTHROPIC_API_KEY" ]; then
+        echo "cclaude: the vault returned no Hyper key" >&2
         exit 1
       fi
       ANTHROPIC_BASE_URL=https://hyper.charm.land
-      ANTHROPIC_API_KEY="$(cat "$key_file")"
       ANTHROPIC_MODEL=deepseek-v4.1-flash
       ANTHROPIC_DEFAULT_SONNET_MODEL=kimi-k3
       ANTHROPIC_DEFAULT_HAIKU_MODEL=glm-5.3-flash
@@ -220,17 +221,5 @@ in {
     set -lx CRUSH_CLIENT_SERVER 1
     command crush95 -H tcp://agent01:7799 $argv
     printf '\e]112\a\e]111\a'
-  '';
-
-  # The Hyper key slot: an empty mode-600 file, created once so the operator only
-  # has to paste a key in rather than also get the file's mode right. The
-  # launcher refuses to start while it is empty (test -s), so a half-finished
-  # setup fails loudly instead of sending an empty key.
-  home.activation.seedHyperKey = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD mkdir -p ${config.xdg.configHome}/opencode/secrets
-    $DRY_RUN_CMD chmod 700 ${config.xdg.configHome}/opencode/secrets
-    if [ ! -e ${config.xdg.configHome}/opencode/secrets/hyper-local.key ]; then
-      $DRY_RUN_CMD install -m 600 /dev/null ${config.xdg.configHome}/opencode/secrets/hyper-local.key
-    fi
   '';
 }
