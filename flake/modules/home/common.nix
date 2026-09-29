@@ -14,6 +14,20 @@
         "!/run/current-system/sw/bin/gh auth git-credential"
       ];
     };
+
+    # One hook directory for every repository on the box, present and future,
+    # rather than a file installed into each .git/hooks.
+    #
+    # Do not also set settings.core.hooksPath: home-manager merges both into
+    # iniContent at equal priority, so declaring both is an evaluation error
+    # rather than a silent winner.
+    #
+    # Setting this also stops the Claude Code runner from installing its own
+    # hook to add a Co-authored-by trailer - it skips the install when
+    # core.hooksPath is already set, so it defers to this instead of fighting
+    # it. See config/git-hooks/commit-msg for what the hook does and why it
+    # matches on trailer keys rather than harness names.
+    hooks.commit-msg = ../../config/git-hooks/commit-msg;
   };
 
   programs.fish = {

@@ -1,0 +1,51 @@
+#!/bin/sh
+# Strip AI-harness attribution out of a commit message before git records it.
+#
+# This matches the SHAPE of the stamp, not the product name. A blocklist of
+# harness names (claude|deepseek|gpt|...) rots the moment a new harness appears,
+# and a miss is silent, so it needs porting every time the tool changes. Git
+# trailer keys are a stable convention every harness copies instead, so there is
+# nothing here to port: a harness nobody has heard of yet is caught on day one
+# as long as it writes a trailer.
+#
+# The three shapes seen in the wild, taken from the Claude Code 2.1.281 bundle:
+#
+#   Co-Authored-By: <model> <noreply@anthropic.com>   a git trailer
+#   Claude-Session: <url>                            a git trailer
+#   Generated with [Claude Code](<url>)              a body line
+#
+# The model named in the trailer is not trustworthy - it reports the model the
+# harness asked for, not the one that ran - which is the other reason to match
+# on the key rather than the name.
+#
+# Wired up via programs.git.hooks in modules/home/common.nix, which points
+# core.hooksPath at a link farm holding this file. Nothing to install per
+# repository, and a repository that sets its own core.hooksPath still wins.
+set -eu
+
+msg="$1"
+pat='^[Cc]o-[Aa]uthored-[Bb]y:|^Claude-Session:|Generated with \[[^]]+\]\('
+
+# grep -c exits 1 on no match, which set -e would otherwise treat as failure.
+stripped=$(grep -cE "$pat" "$msg" || true)
+[ "$stripped" -eq 0 ] && exit 0
+
+# Filtered with grep rather than awk on purpose: awk's -v goes through string
+# escape processing, so a backslash in the pattern is mangled before it ever
+# reaches the regex engine and `\(` becomes a bare `(`. grep takes the ERE
+# verbatim, so there is no second escaping layer to get wrong.
+grep -vE "$pat" "$msg" > "$msg.repothing" || true
+if [ ! -s "$msg.repothing" ]; then
+  # Either every line was a stamp, or grep failed. Both mean the message is not
+  # safe to hand to git, so stop rather than record an empty commit.
+  printf 'commit-msg: refusing to strip the commit message to nothing\n' >&2
+  rm -f "$msg.repothing"
+  exit 1
+fi
+# Removing the trailer leaves the blank line that separated it from the body.
+sed -e :a -e '/^[[:space:]]*$/{$d;N;ba' -e '}' "$msg.repothing" > "$msg"
+rm -f "$msg.repothing"
+
+# Said out loud rather than silently: this is the instrument that shows which
+# harness is still stamping, which is how the stamping gets caught at all.
+printf 'commit-msg: stripped %s AI attribution line(s)\n' "$stripped" >&2
