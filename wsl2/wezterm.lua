@@ -19,6 +19,13 @@ config.default_domain = "WSL:Ubuntu-24.04"
 --    /usr/bin and the login shell is what restores the profile. The panes herdr
 --    spawns inherit that PATH, which is what makes nix-installed agents such as
 --    codex resolvable inside them.
+-- Boot the session, not herdr. start-session (nix-config, flake/modules/home/
+-- wsl2.nix) unlocks the vault first and only then execs herdr, because herdr
+-- checks its remote endpoint once at startup: start it with the anchor still
+-- locked and the agent box stays unreachable until the client is restarted.
+-- Absolute path inside a login shell: the WSL domain inherits the distro PATH,
+-- which has no nix profile, and the login shell is what restores it for herdr
+-- and for every pane it spawns.
 local wsl_domains = wezterm.default_wsl_domains()
 
 for _, domain in ipairs(wsl_domains) do
@@ -26,7 +33,7 @@ for _, domain in ipairs(wsl_domains) do
     domain.default_prog = {
       "/bin/bash",
       "-lc",
-      "exec /home/rytter/.nix-profile/bin/herdr",
+      "exec /home/rytter/.nix-profile/bin/start-session",
     }
   end
 end

@@ -85,6 +85,34 @@ let
       exec ${pkgs.claude-code}/bin/claude --settings ${hyperClaudeSettings} "$@"
     '';
   };
+
+  # The boot sequence. WezTerm runs this instead of herdr directly, because herdr
+  # checks its agent-box endpoint once, at client startup: start it before the
+  # anchor is unlocked and that endpoint stays dead until the client is restarted.
+  #
+  # This is the only path to a session, which is the point — there is no route to
+  # herdr that skips the unlock. On failure it drops to a shell rather than
+  # starting herdr anyway, because a half-unlocked session looks healthy and then
+  # fails somewhere else entirely.
+  start-session = pkgs.writeShellApplication {
+    name = "start-session";
+    runtimeInputs = [ pkgs.herdr pkgs.fish ];
+    text = ''
+      # The socket the systemd unit owns and fish also exports (common.nix).
+      # herdr inherits this, and so does every pane it spawns.
+      if [ -n "''${XDG_RUNTIME_DIR:-}" ]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.sock"
+      fi
+
+      # Resolved from PATH — a home package, like `sec` in cclaude above.
+      if ! unlock; then
+        echo "start-session: staying in a shell; herdr was not started" >&2
+        exec fish -l
+      fi
+
+      exec herdr
+    '';
+  };
 in {
   imports = [
     ./common.nix
@@ -186,6 +214,9 @@ in {
     # stock binary; cclaude above is the Hyper-bootstrapped one.
     claude-code
     cclaude
+    # Unlock, then herdr. WezTerm's default_prog runs this rather than herdr, so
+    # the endpoint herdr checks at startup is only reached with an anchor present.
+    start-session
     # herdr plays its sound notifications by shelling out to an mp3-capable
     # player (paplay first on Linux) and silently does nothing when it finds
     # none. WSLg already runs the PulseAudio server at unix:/mnt/wslg/PulseServer,

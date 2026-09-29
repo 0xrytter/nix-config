@@ -95,19 +95,35 @@ let
       }
       trap cleanup EXIT INT TERM
 
-      if command -v wl-paste >/dev/null 2>&1; then
-        wl-paste > "$raw" 2>/dev/null || true
-      fi
-      if [ ! -s "$raw" ] && command -v powershell.exe >/dev/null 2>&1; then
-        powershell.exe -NoProfile -Command Get-Clipboard > "$raw" 2>/dev/null || true
-      fi
+      # Read the clipboard, and when running interactively keep asking until the
+      # anchor is there. The prompt is what makes the boot sequence possible:
+      # WezTerm runs `unlock` before it starts herdr, so there has to be a moment
+      # to go and fetch the key. Interactive-only, so a script calling unlock
+      # still fails fast rather than hanging on a prompt nobody can answer.
+      while :; do
+        if command -v wl-paste >/dev/null 2>&1; then
+          wl-paste > "$raw" 2>/dev/null || true
+        fi
+        if [ ! -s "$raw" ] && command -v powershell.exe >/dev/null 2>&1; then
+          powershell.exe -NoProfile -Command Get-Clipboard > "$raw" 2>/dev/null || true
+        fi
 
-      tr -d '\r' < "$raw" | grep -oE 'AGE-SECRET-KEY-1[A-Z0-9]+' | head -n1 > "$key" || true
-      if [ ! -s "$key" ]; then
-        echo "unlock: no age secret key on the clipboard" >&2
-        echo "        copy the AGE-SECRET-KEY-1... line from Bitwarden first" >&2
-        exit 1
-      fi
+        tr -d '\r' < "$raw" | grep -oE 'AGE-SECRET-KEY-1[A-Z0-9]+' | head -n1 > "$key" || true
+        if [ -s "$key" ]; then
+          break
+        fi
+
+        if [ ! -t 0 ]; then
+          echo "unlock: no age secret key on the clipboard" >&2
+          echo "        copy the AGE-SECRET-KEY-1... line from Bitwarden first" >&2
+          exit 1
+        fi
+
+        echo "unlock: no age key on the clipboard yet." >&2
+        echo "        Copy the AGE-SECRET-KEY-1... line from Bitwarden, then press Enter." >&2
+        echo "        (Ctrl-C to cancel)" >&2
+        read -r _ || exit 1
+      done
       chmod 600 "$key"
 
       if ! got="$(age-keygen -y "$key" 2>/dev/null)"; then
