@@ -375,6 +375,41 @@ An address is stable while a node exists; a re-provisioned box joins again and g
 a new one. The iacthing repository's `status.sh` prints the current address of
 every host, which is the answer when a name cannot be trusted.
 
+### When our own domains resolve to the wrong address
+
+The home router's resolver (`192.168.1.1`) serves stale records: after a domain
+moved to Cloudflare it kept answering with the registrar's old parking address
+(`162.255.119.197`, `207.207.210.x`), long past the TTL. Rebooting the router does
+not clear it and its DNS settings are greyed out, so it is routed around instead,
+on both sides of this machine (found 2026-09-29):
+
+* **WSL** asks tailscale (`100.100.100.100`), and the tailnet's DNS settings (admin
+  console → DNS) forward to Cloudflare with **Override local DNS** on. That is set
+  in the console, not in this repository. It covers every tailnet device, so keep it.
+* **Windows** does not run tailscale, so its WiFi adapter points at Cloudflare
+  directly. In an **administrator** PowerShell:
+
+  ```powershell
+  Set-DnsClientServerAddress -InterfaceAlias "WiFi" -ServerAddresses 1.1.1.1,1.0.0.1
+  Clear-DnsClientCache
+  ```
+
+  Undo with `-ResetServerAddresses`. It applies on every network, so a hotel's
+  sign-in page may need it reset. Then clear Chrome's own cache:
+  `chrome://net-internals/#dns` → Clear host cache, and `#sockets` → Flush socket pools.
+
+To tell a lying resolver from a wrong record, ask both and compare. If the public
+resolvers give the server's address and this machine does not, it is the resolver:
+
+```bash
+getent hosts thinglaunch.com                  # what this machine gets
+dig +short @1.1.1.1 thinglaunch.com           # what the internet gets
+```
+
+and on Windows (from WSL): `powershell.exe -c "Get-DnsClientCache | ? Entry -like '*thinglaunch*'"`
+shows a stale cached answer. A site that times out in the browser while `curl`
+from WSL works is this, not the server.
+
 ### Talking to the agent box
 
 Once this machine is on the tailnet, `agent` is the client for the fleet's agent
