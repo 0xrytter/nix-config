@@ -77,6 +77,48 @@ an absolute path inside a login shell.
    copies must stay identical.
 5. **Keep the version table above current** whenever a bump lands.
 
+## Changes made 2026-09-29 (git hooks strip AI attribution)
+
+Any harness that stamps a commit now gets its stamp removed, in one place,
+instead of the trailer having to be defeated once per tool and once per
+repository.
+
+| file | change | why |
+| --- | --- | --- |
+| `flake/config/git-hooks/commit-msg` (new) | the stripper; executable, so the link farm keeps the bit | it matches the **shape** of the stamp — git trailer keys, plus the `Generated with [..](..)` body line — not harness names. A name blocklist rots as harnesses appear and misses silently when it does; trailer keys are a convention every harness copies, so there is nothing to port when the tool changes |
+| `flake/modules/home/common.nix` | `programs.git.hooks.commit-msg` | one `core.hooksPath` covers every repository on the box, including ones not cloned yet, with nothing installed into a `.git/hooks` to drift. Do not also set `settings.core.hooksPath`: home-manager merges both into `iniContent` at equal priority, so declaring both is an evaluation error rather than a silent winner |
+| `flake/config/claude-settings.json` | `"attribution": false` | the only lever that reaches a **pull request description**, which no local git hook can; it also covers the commit trailer |
+
+Three things worth remembering:
+
+- **Setting `core.hooksPath` disarms Claude Code's own attribution hook.** Its
+  runner installs a hook to add the trailer, but skips that install when
+  `core.hooksPath` is already set (`skipping Co-authored-by hook install so
+  existing hooks keep running`). Declaring ours therefore wins by construction
+  instead of fighting a per-session install.
+- **The hook filters with `grep`, not `awk`.** `awk -v` puts the pattern through
+  string escape processing, so `\(` reaches the regex engine as a bare `(` and the
+  hook dies with `invalid regexp: unbalanced (` — which, under `set -e`, *aborts
+  the commit*. The first revision had exactly this, and only driving a real
+  `git commit` through the built artifact exposed it; testing the source file did
+  not.
+- **`attribution: false` needs claude-code >= 2.1.281.** Below that the whole
+  settings file is rejected and the statusLine and Stop hook go with it. Every
+  host carries 2.1.281 from the shared pinned nixpkgs, which is why the bare
+  `false` is safe here rather than the lengthier `commit`/`pr`/`sessionUrl` form.
+
+The trade-off, taken deliberately: a **human** `Co-Authored-By` is stripped too.
+Without a name list there is nothing to maintain and nothing to miss, but the
+trailer can no longer record a human co-author.
+
+Not covered: `--no-verify`, commits made through the GitHub web UI, and commits
+from a machine without this profile. Those want the server-side rule — a ruleset
+`commit_message_pattern` with `negate` — which is not in place.
+
+Not yet active: `bash home.sh` applies it. The hook logs what it stripped to
+stderr, so a harness stamping in a shape the pattern misses shows up as silence
+rather than failing quietly.
+
 ## Changes made 2026-09-27 (herdr replaces tmux as the WSL2 entry point)
 
 WezTerm on Windows now boots straight into herdr. tmux is deliberately **not**
