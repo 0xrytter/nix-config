@@ -444,49 +444,96 @@
       vim.keymap.set('n', '<leader>gH', '<cmd>DiffviewFileHistory<cr>',   { desc = '[G]it branch [H]istory' })
       vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>',         { desc = '[G]it diffview [Q]uit' })
 
-      -- Ask cclaude about the visual selection; the answer opens in a float.
-      -- --bare with no tools skips CLAUDE.md, hooks and the agent loop, which
-      -- keeps a round trip near 3s. Stderr carries cclaude's model warnings,
-      -- so only stdout is shown.
+      -- Ask DeepSeek about the visual selection, with follow-ups in the same
+      -- float. A raw Messages call to Hyper with thinking disabled answers in
+      -- ~1s; going through the Claude Code harness took 3-4s. The key comes
+      -- from `sec` per request and reaches curl on stdin, never argv.
+      local chat = { messages = {} }
+
+      local function show(lines)
+        if not (chat.buf and vim.api.nvim_buf_is_valid(chat.buf)) then
+          chat.buf = vim.api.nvim_create_buf(false, true)
+          vim.bo[chat.buf].filetype = 'markdown'
+          vim.keymap.set('n', 'q', '<cmd>close<cr>', { buffer = chat.buf, desc = 'Close chat' })
+          vim.keymap.set('n', '<CR>', function()
+            vim.ui.input({ prompt = 'Follow-up: ' }, function(q)
+              if q and q ~= "" then chat.ask(q) end
+            end)
+          end, { buffer = chat.buf, desc = 'Ask a follow-up' })
+        end
+        local empty = vim.api.nvim_buf_line_count(chat.buf) == 1 and vim.api.nvim_buf_get_lines(chat.buf, 0, 1, false)[1] == ""
+        vim.api.nvim_buf_set_lines(chat.buf, empty and 0 or -1, -1, false, lines)
+        if vim.fn.bufwinid(chat.buf) == -1 then
+          local width, height = math.floor(vim.o.columns * 0.7), math.floor(vim.o.lines * 0.6)
+          local win = vim.api.nvim_open_win(chat.buf, true, {
+            relative = 'editor', style = 'minimal', border = 'rounded', title = ' ask (<CR> follow-up, q close) ',
+            width = width, height = height,
+            row = math.floor((vim.o.lines - height) / 2), col = math.floor((vim.o.columns - width) / 2),
+          })
+          vim.wo[win].wrap = true
+        end
+        vim.api.nvim_win_set_cursor(vim.fn.bufwinid(chat.buf), { vim.api.nvim_buf_line_count(chat.buf), 0 })
+      end
+
+      local function send()
+        local key = vim.system({ 'sec', 'hyper-api-key' }, { text = true }):wait()
+        if key.code ~= 0 then
+          table.remove(chat.messages)
+          return vim.notify('sec: ' .. key.stderr, vim.log.levels.ERROR)
+        end
+        local body = vim.json.encode({
+          model = 'deepseek-v4.1-flash', max_tokens = 1024, thinking = { type = 'disabled' },
+          system = 'You explain code to an experienced developer who is learning this language. Be terse.',
+          messages = chat.messages,
+        })
+        -- curl config: inside double quotes only \ and " need escaping.
+        local config = ('header = "x-api-key: %s"\ndata-binary = "%s"\n'):format(vim.trim(key.stdout), (body:gsub('[\\"]', '\\%0')))
+        vim.notify('ask: waiting…')
+        vim.system(
+          { 'curl', '-sS', '-K', '-', '-H', 'anthropic-version: 2023-06-01', '-H', 'content-type: application/json', 'https://hyper.charm.land/v1/messages' },
+          { stdin = config, text = true },
+          vim.schedule_wrap(function(res)
+            local ok, resp = pcall(vim.json.decode, res.stdout)
+            local text = ok and type(resp.content) == 'table' and vim.iter(resp.content):find(function(c) return c.type == 'text' end)
+            if res.code ~= 0 or not text then
+              table.remove(chat.messages)
+              return vim.notify('ask failed: ' .. (res.stderr ~= "" and res.stderr or res.stdout), vim.log.levels.ERROR)
+            end
+            table.insert(chat.messages, { role = 'assistant', content = text.text })
+            show(vim.list_extend(vim.split(text.text, '\n'), { "" }))
+          end)
+        )
+      end
+
+      function chat.ask(question)
+        table.insert(chat.messages, { role = 'user', content = question })
+        show({ '## ' .. question, "" })
+        send()
+      end
+
+      -- Starts a fresh chat: the selection goes into the first message only.
+      local function ask_about(lines, question)
+        chat.messages = {}
+        if chat.buf and vim.api.nvim_buf_is_valid(chat.buf) then vim.api.nvim_buf_set_lines(chat.buf, 0, -1, false, {}) end
+        local code = ('From %s (%s):\n```\n%s\n```\n\n'):format(vim.fn.expand('%:.'), vim.bo.filetype, table.concat(lines, '\n'))
+        table.insert(chat.messages, { role = 'user', content = code .. question })
+        show({ '## ' .. question, "" })
+        send()
+      end
+
       local function take_selection()
         local lines = vim.fn.getregion(vim.fn.getpos('v'), vim.fn.getpos('.'), { type = vim.fn.mode() })
         vim.api.nvim_feedkeys(vim.keycode('<Esc>'), 'nx', false)
         return lines
       end
-      local function ask(lines, question)
-        local prompt = ('%s\nThe code is from %s (%s). Be terse.'):format(question, vim.fn.expand('%:.'), vim.bo.filetype)
-        vim.notify('cclaude: asking…')
-        vim.system(
-          { 'cclaude', '-p', '--bare', '--tools', "", '--effort', 'low', '--no-session-persistence', prompt },
-          { stdin = table.concat(lines, '\n'), text = true },
-          vim.schedule_wrap(function(res)
-            if res.code ~= 0 then
-              vim.notify('cclaude failed: ' .. res.stderr, vim.log.levels.ERROR)
-              return
-            end
-            local out = vim.split(vim.trim(res.stdout), '\n')
-            local buf = vim.api.nvim_create_buf(false, true)
-            vim.api.nvim_buf_set_lines(buf, 0, -1, false, out)
-            vim.bo[buf].filetype = 'markdown'
-            local width = math.floor(vim.o.columns * 0.7)
-            local height = math.min(#out + 2, math.floor(vim.o.lines * 0.7))
-            local win = vim.api.nvim_open_win(buf, true, {
-              relative = 'editor', style = 'minimal', border = 'rounded', title = ' cclaude ',
-              width = width, height = height,
-              row = math.floor((vim.o.lines - height) / 2), col = math.floor((vim.o.columns - width) / 2),
-            })
-            vim.wo[win].wrap = true
-            vim.keymap.set('n', 'q', '<cmd>close<cr>', { buffer = buf })
-          end)
-        )
-      end
-      vim.keymap.set('x', '<leader>ce', function() ask(take_selection(), 'Explain this code.') end, { desc = '[C]ode [E]xplain selection' })
+      vim.keymap.set('x', '<leader>ce', function() ask_about(take_selection(), 'Explain this code.') end, { desc = '[C]ode [E]xplain selection' })
       vim.keymap.set('x', '<leader>cq', function()
         local lines = take_selection()
         vim.ui.input({ prompt = 'Ask about selection: ' }, function(q)
-          if q and q ~= "" then ask(lines, q) end
+          if q and q ~= "" then ask_about(lines, q) end
         end)
       end, { desc = '[C]ode [Q]uestion about selection' })
+      vim.keymap.set('n', '<leader>cc', function() show({}) end, { desc = '[C]ode reopen [C]hat' })
 
       -- mini statusline section override
       require('mini.statusline').section_location = function() return '%2l:%-2v' end
