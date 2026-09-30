@@ -25,6 +25,11 @@ let
   # claude-settings.json and still talk to Anthropic.
   hyperClaudeSettings = pkgs.writeText "claude-hyper-settings.json" (builtins.toJSON {
     availableModels = [ "deepseek-v4.1-flash" "kimi-k3" "glm-5.3-flash" ];
+    # auto is the built-in default, and under Hyper it is broken rather than
+    # merely chatty: the classifier runs on Sonnet 5, Hyper serves no Sonnet 5,
+    # so it falls back to the session model and fails closed at random. Start
+    # where the classifier is never consulted. Shift+tab still changes it.
+    permissions.defaultMode = "acceptEdits";
     modelPicker = {
       replaceBuiltInOptions = true;
       options = [
