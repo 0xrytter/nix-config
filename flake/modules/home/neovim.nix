@@ -82,6 +82,7 @@
           { __unkeyed-1 = "<leader>w"; group = "[W]orkspace"; }
           { __unkeyed-1 = "<leader>t"; group = "[T]oggle"; }
           { __unkeyed-1 = "<leader>h"; group = "Git [H]unk"; mode = [ "n" "v" ]; }
+          { __unkeyed-1 = "<leader>g"; group = "[G]it diffview"; }
         ];
       };
 
@@ -435,6 +436,57 @@
       vim.keymap.set('o',               'r', function() require('flash').remote() end,             { desc = 'Remote Flash' })
       vim.keymap.set({ 'o', 'x' },      'R', function() require('flash').treesitter_search() end, { desc = 'Treesitter Search' })
       vim.keymap.set('c',           '<c-s>', function() require('flash').toggle() end,             { desc = 'Toggle Flash Search' })
+
+      -- diffview: the review gate before any agent diff is committed
+      vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>',          { desc = '[G]it [D]iff working tree' })
+      vim.keymap.set('n', '<leader>gl', '<cmd>DiffviewOpen HEAD~1<cr>',   { desc = '[G]it diff [L]ast commit' })
+      vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = '[G]it file [H]istory' })
+      vim.keymap.set('n', '<leader>gH', '<cmd>DiffviewFileHistory<cr>',   { desc = '[G]it branch [H]istory' })
+      vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>',         { desc = '[G]it diffview [Q]uit' })
+
+      -- Ask cclaude about the visual selection; the answer opens in a float.
+      -- --bare with no tools skips CLAUDE.md, hooks and the agent loop, which
+      -- keeps a round trip near 3s. Stderr carries cclaude's model warnings,
+      -- so only stdout is shown.
+      local function take_selection()
+        local lines = vim.fn.getregion(vim.fn.getpos('v'), vim.fn.getpos('.'), { type = vim.fn.mode() })
+        vim.api.nvim_feedkeys(vim.keycode('<Esc>'), 'nx', false)
+        return lines
+      end
+      local function ask(lines, question)
+        local prompt = ('%s\nThe code is from %s (%s). Be terse.'):format(question, vim.fn.expand('%:.'), vim.bo.filetype)
+        vim.notify('cclaude: asking…')
+        vim.system(
+          { 'cclaude', '-p', '--bare', '--tools', "", '--effort', 'low', '--no-session-persistence', prompt },
+          { stdin = table.concat(lines, '\n'), text = true },
+          vim.schedule_wrap(function(res)
+            if res.code ~= 0 then
+              vim.notify('cclaude failed: ' .. res.stderr, vim.log.levels.ERROR)
+              return
+            end
+            local out = vim.split(vim.trim(res.stdout), '\n')
+            local buf = vim.api.nvim_create_buf(false, true)
+            vim.api.nvim_buf_set_lines(buf, 0, -1, false, out)
+            vim.bo[buf].filetype = 'markdown'
+            local width = math.floor(vim.o.columns * 0.7)
+            local height = math.min(#out + 2, math.floor(vim.o.lines * 0.7))
+            local win = vim.api.nvim_open_win(buf, true, {
+              relative = 'editor', style = 'minimal', border = 'rounded', title = ' cclaude ',
+              width = width, height = height,
+              row = math.floor((vim.o.lines - height) / 2), col = math.floor((vim.o.columns - width) / 2),
+            })
+            vim.wo[win].wrap = true
+            vim.keymap.set('n', 'q', '<cmd>close<cr>', { buffer = buf })
+          end)
+        )
+      end
+      vim.keymap.set('x', '<leader>ce', function() ask(take_selection(), 'Explain this code.') end, { desc = '[C]ode [E]xplain selection' })
+      vim.keymap.set('x', '<leader>cq', function()
+        local lines = take_selection()
+        vim.ui.input({ prompt = 'Ask about selection: ' }, function(q)
+          if q and q ~= "" then ask(lines, q) end
+        end)
+      end, { desc = '[C]ode [Q]uestion about selection' })
 
       -- mini statusline section override
       require('mini.statusline').section_location = function() return '%2l:%-2v' end
