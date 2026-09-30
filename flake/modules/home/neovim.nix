@@ -443,6 +443,27 @@
       vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = '[G]it file [H]istory' })
       vim.keymap.set('n', '<leader>gH', '<cmd>DiffviewFileHistory<cr>',   { desc = '[G]it branch [H]istory' })
       vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>',         { desc = '[G]it diffview [Q]uit' })
+      -- Review gate: walk the unpushed commits, stamp each with a one-line summary.
+      -- The pre-push hook refuses unstamped commits (see git-stamp in common.nix).
+      vim.keymap.set('n', '<leader>gr', '<cmd>DiffviewFileHistory --range=@{upstream}..HEAD<cr>', { desc = '[G]it [R]eview unpushed' })
+      vim.keymap.set('n', '<leader>gs', function()
+        -- ponytail: panel.cur_item is diffview internals, not API; if an update
+        -- breaks it, take the sha from the diff buffer's diffview:// name instead.
+        local view = require('diffview.lib').get_current_view()
+        local entry = view and view.panel.cur_item and view.panel.cur_item[1]
+        if not (entry and entry.commit) then
+          return vim.notify('stamp: select a commit in a diffview history first', vim.log.levels.WARN)
+        end
+        local sha = entry.commit.hash
+        vim.ui.input({ prompt = ('Stamp %s, what does it do? '):format(sha:sub(1, 8)) }, function(summary)
+          if not summary or summary == "" then return end
+          local res = vim.system({ 'git', 'stamp', sha, summary }, { text = true }):wait()
+          if res.code ~= 0 then
+            return vim.notify('stamp failed: ' .. res.stderr, vim.log.levels.ERROR)
+          end
+          vim.notify(('stamped %s'):format(sha:sub(1, 8)))
+        end)
+      end, { desc = '[G]it [S]tamp commit as reviewed' })
 
       -- Ask DeepSeek about the visual selection, with follow-ups in the same
       -- float. A raw Messages call to Hyper with thinking disabled answers in

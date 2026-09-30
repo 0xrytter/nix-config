@@ -5,6 +5,8 @@
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
+      # Show review stamps (git-stamp below) in git log.
+      notes.displayRef = "refs/notes/reviewed";
       "credential \"https://github.com\"".helper = [
         ""
         "!/run/current-system/sw/bin/gh auth git-credential"
@@ -28,6 +30,9 @@
     # it. See config/git-hooks/commit-msg for what the hook does and why it
     # matches on trailer keys rather than harness names.
     hooks.commit-msg = ../../config/git-hooks/commit-msg;
+    # Blocks a push until every commit in it carries a review stamp; see the
+    # hook for why the gate is at push rather than commit, and git-stamp below.
+    hooks.pre-push = ../../config/git-hooks/pre-push;
   };
 
   programs.fish = {
@@ -406,6 +411,28 @@
   home.file.".claude/CLAUDE.md".source = ../../config/agent-rules.md;
 
   home.packages = with pkgs; [
+    # `git stamp [<commit>] [<summary>]`: record that a human reviewed a commit,
+    # in their own words, as a note under refs/notes/reviewed. The pre-push hook
+    # refuses commits without one. Prompts for the summary when none is given.
+    (writeShellApplication {
+      name = "git-stamp";
+      runtimeInputs = [ git ];
+      text = ''
+        sha=$(git rev-parse --verify "''${1:-HEAD}^{commit}")
+        shift || true
+        summary="$*"
+        if [ -z "$summary" ]; then
+          git log -1 --format='%h %s' "$sha"
+          printf 'What does it do? (or "skip"): '
+          read -r summary
+        fi
+        if [ -z "$summary" ]; then
+          echo "git stamp: empty summary, not stamped" >&2
+          exit 1
+        fi
+        git notes --ref=reviewed add -f -m "$summary" "$sha"
+      '';
+    })
     fd
     ripgrep
     sesh
