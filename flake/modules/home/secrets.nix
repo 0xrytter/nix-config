@@ -77,6 +77,13 @@ let
     '';
   };
 
+  # sops-editor — what `sops edit` opens the decrypted file in (SOPS_EDITOR):
+  # nvim with no undo, swap, shada or backup files, so no plaintext outlives it.
+  sops-editor = pkgs.writeShellApplication {
+    name = "sops-editor";
+    text = builtins.readFile ../../config/sops-editor.sh;
+  };
+
   # unlock — paste the anchor from the clipboard into tmpfs, verify it, and load
   # the ssh key into the agent.
   #
@@ -166,6 +173,7 @@ in
   home.packages = [
     sec
     secfile
+    sops-editor
     unlock
   ];
 
@@ -176,6 +184,7 @@ in
     if set -q XDG_RUNTIME_DIR
       set -gx SOPS_AGE_KEY_FILE "$XDG_RUNTIME_DIR/sops/age/keys.txt"
     end
+    set -gx SOPS_EDITOR sops-editor
   '';
 
   # sops-nix's own keyFile, for consistency. Nothing declares sops.secrets on
