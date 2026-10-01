@@ -8,3 +8,9 @@
 # onboarding is the one key herdr writes by itself, so it is spelled out and
 # never needs a write.
 onboarding = false
+
+[ui]
+# "auto" draws herdr's own block cursor on WSL (against ConPTY flicker), which
+# swallows the shape apps ask for: nvim's insert-mode bar never shows. "native"
+# hands the cursor to WezTerm. If the cursor flickers, this is the line to revert.
+host_cursor = "native"
