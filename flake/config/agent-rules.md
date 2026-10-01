@@ -61,7 +61,7 @@ supervision replaces practice — so split the work by whose hands it needs:
 
 ## Secrets — never handle the values
 
-- Treat secrets (API keys, passwords, tokens, DSNs, private keys) as somethings
+- Treat secrets (API keys, passwords, tokens, DSNs, private keys) as something
   you never need to _see_. Reading them to diagnose infrastructure is almost
   never necessary: use systems that store the values for you, or work from
   `is it reachable` / `is it valid` questions instead of printing the value.
@@ -317,10 +317,7 @@ choice:
    own: distribution, static typing, no dependency footprint at runtime.
 
 Every rung has an exit criterion ("this outgrew it"), and every stage is a
-file in the repo rather than a concept in someone's head. The absence of this
-ladder (the .NET-ecosystem shape of the world) is why their delete-test-data
-answer is ad-hoc SQL with no reset story: with no rung for disposable
-programs, habits die by environment death. The ladder keeps them working.
+file in the repo rather than a concept in someone's head.
 
 ## Dependencies — registry, not services; depth, not sprawl
 
@@ -365,9 +362,3 @@ above; `open` means unsettled, so do not invent a standard there.
 - Does the backup leave the failure domain, and has a restore actually been run?
 - Is the schema normalized, indexed for the queries it serves, and the migration reversible?
 - If this dies silently, who notices? (open)
-
-## The point
-
-The best code is the code never written. The best ruleset is the one that lets
-you write the least that works, with the fewest dependencies, in the language
-that fits the job — and keeps the system declared, reproducible, and yours.
