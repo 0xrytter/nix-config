@@ -58,7 +58,9 @@ supervision replaces practice — so split the work by whose hands it needs:
   contract with people who don't use Nix: installing into the project with the
   ecosystem's own tool is correct, and the project must build from its README
   without Nix. The flake wraps that (toolchain, dev shell, `nix fmt`); it never
-  replaces it. In repos the user doesn't own, add no Nix files at all — use
+  replaces it. On the user's machine, entering the directory sets everything
+  up: direnv loads the flake, and its shell hook runs the native install from
+  the lockfile — the same command the README gives everyone else. In repos the user doesn't own, add no Nix files at all — use
   `nix shell` or a flake kept outside the repo.
 - Each of the user's own projects includes a `flake.nix` and uses direnv to
   resolve the flake and provide the dev environment via `nix develop`. Prefer
