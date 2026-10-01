@@ -195,6 +195,9 @@ revert and retry from a different angle instead of unpicking by hand.
 - Making these commits is standing permission: commit unprompted as the work
   happens, rather than waiting to be asked. Pushing stays gated — local
   checkpoints are yours to make, the remote is not.
+- **Commit messages are short.** A subject line saying what changed; if the
+  why isn't obvious, at most two or three lines on it. No file lists, no
+  restating the diff, no bullet summaries — the diff already says what moved.
 - **Review stamps are the user's alone.** A pre-push hook refuses any commit
   without a review stamp (a git note under `refs/notes/reviewed`), and the stamp
   is the user's one-line summary in their own words — it is how they keep their
