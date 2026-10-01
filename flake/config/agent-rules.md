@@ -49,6 +49,9 @@ supervision replaces practice — so split the work by whose hands it needs:
 - Each project includes a `flake.nix` and uses direnv to resolve the flake and
   provide the dev environment via `nix develop`. Prefer that over local
   installs or global tools.
+- Every flake declares a `formatter` output via treefmt-nix, enabling the
+  formatter for each language the project uses. `nix fmt` is the one format
+  command: run it before every commit, and add it to any flake that lacks it.
 - Repos are managed with `gh` (GitHub CLI). Create a new repo and push the
   existing history with `gh repo create <owner>/<name> --private --source . --push`
   from the project root (or `--public` if it is meant to be public).
