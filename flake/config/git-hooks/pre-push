@@ -11,7 +11,9 @@
 # Opt a repository out with `git config stamp.skip true`.
 set -eu
 
-[ "$(git config --bool stamp.skip || true)" = true ] && exit 0
+if [ "$(git config --bool stamp.skip)" = true ]; then
+  exit 0
+fi
 
 remote="$1"
 unstamped=""
@@ -20,8 +22,8 @@ while read -r _ local_sha _ remote_sha; do
   # An all-zero sha means the ref does not exist on that side.
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac # deleting a branch
   case "$remote_sha" in
-    *[!0]*) commits=$(git rev-list "$remote_sha..$local_sha") ;;
-    *) commits=$(git rev-list "$local_sha" --not --remotes="$remote") ;; # new branch
+  *[!0]*) commits=$(git rev-list "$remote_sha..$local_sha") ;;
+  *) commits=$(git rev-list "$local_sha" --not --remotes="$remote") ;; # new branch
   esac
   for c in $commits; do
     git notes --ref=reviewed show "$c" >/dev/null 2>&1 || unstamped="$unstamped $c"
