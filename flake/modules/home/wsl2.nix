@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # zellij 0.44.2 is what the pinned nixpkgs (2026-05-06) ships, and its
   # renderer is measurably why nvim scrolling drags under it — a bare WezTerm
@@ -23,34 +28,40 @@ let
   # Passed with --settings (which merges over the shared file for this session)
   # so the lineup stays on this machine: the NixOS hosts share
   # claude-settings.json and still talk to Anthropic.
-  hyperClaudeSettings = pkgs.writeText "claude-hyper-settings.json" (builtins.toJSON {
-    availableModels = [ "deepseek-v4.1-flash" "kimi-k3" "glm-5.3-flash" ];
-    # auto is the built-in default, and under Hyper it is broken rather than
-    # merely chatty: the classifier runs on Sonnet 5, Hyper serves no Sonnet 5,
-    # so it falls back to the session model and fails closed at random. Start
-    # where the classifier is never consulted. Shift+tab still changes it.
-    permissions.defaultMode = "acceptEdits";
-    modelPicker = {
-      replaceBuiltInOptions = true;
-      options = [
-        {
-          model = "deepseek-v4.1-flash";
-          label = "DeepSeek V4.1 Flash";
-          description = "Fast and cheap - the default";
-        }
-        {
-          model = "kimi-k3";
-          label = "Kimi K3";
-          description = "Stronger reasoning for harder work";
-        }
-        {
-          model = "glm-5.3-flash";
-          label = "GLM 5.3 Flash";
-          description = "Fast and cheap";
-        }
+  hyperClaudeSettings = pkgs.writeText "claude-hyper-settings.json" (
+    builtins.toJSON {
+      availableModels = [
+        "deepseek-v4.1-flash"
+        "kimi-k3"
+        "glm-5.3-flash"
       ];
-    };
-  });
+      # auto is the built-in default, and under Hyper it is broken rather than
+      # merely chatty: the classifier runs on Sonnet 5, Hyper serves no Sonnet 5,
+      # so it falls back to the session model and fails closed at random. Start
+      # where the classifier is never consulted. Shift+tab still changes it.
+      permissions.defaultMode = "acceptEdits";
+      modelPicker = {
+        replaceBuiltInOptions = true;
+        options = [
+          {
+            model = "deepseek-v4.1-flash";
+            label = "DeepSeek V4.1 Flash";
+            description = "Fast and cheap - the default";
+          }
+          {
+            model = "kimi-k3";
+            label = "Kimi K3";
+            description = "Stronger reasoning for harder work";
+          }
+          {
+            model = "glm-5.3-flash";
+            label = "GLM 5.3 Flash";
+            description = "Fast and cheap";
+          }
+        ];
+      };
+    }
+  );
 
   # cclaude: the stock Claude Code binary bootstrapped with Charm Hyper as the
   # API provider. `claude` itself is left alone, so the upstream binary and the
@@ -101,7 +112,10 @@ let
   # fails somewhere else entirely.
   start-session = pkgs.writeShellApplication {
     name = "start-session";
-    runtimeInputs = [ pkgs.herdr pkgs.fish ];
+    runtimeInputs = [
+      pkgs.herdr
+      pkgs.fish
+    ];
     text = ''
       # The socket the systemd unit owns and fish also exports (common.nix).
       # herdr inherits this, and so does every pane it spawns.
@@ -118,7 +132,8 @@ let
       exec herdr
     '';
   };
-in {
+in
+{
   imports = [
     ./common.nix
     ./neovim.nix
@@ -133,10 +148,14 @@ in {
 
   # Standalone home-manager on Ubuntu has no /run/current-system; resolve `gh`
   # from the user profile PATH instead.
-  programs.git.settings."credential \"https://github.com\"".helper =
-    lib.mkForce [ "" "!/usr/bin/env gh auth git-credential" ];
-  programs.git.settings."credential \"https://gist.github.com\"".helper =
-    lib.mkForce [ "" "!/usr/bin/env gh auth git-credential" ];
+  programs.git.settings."credential \"https://github.com\"".helper = lib.mkForce [
+    ""
+    "!/usr/bin/env gh auth git-credential"
+  ];
+  programs.git.settings."credential \"https://gist.github.com\"".helper = lib.mkForce [
+    ""
+    "!/usr/bin/env gh auth git-credential"
+  ];
 
   # `rebuild.sh` is NixOS-only; point the fish helpers at the WSL2 switch script.
   programs.fish.functions.nr = lib.mkForce ''
@@ -194,8 +213,8 @@ in {
     bubblewrap
     nerd-fonts.jetbrains-mono
     # Browser handoff for headless WSL: `xdg-open` (via xdg-utils) honours
-# $BROWSER and our tiny `wslview` opens the URL with the Windows browser, so
-# CLI login flows (flyctl auth login, gh, ...) complete normally.
+    # $BROWSER and our tiny `wslview` opens the URL with the Windows browser, so
+    # CLI login flows (flyctl auth login, gh, ...) complete normally.
     xdg-utils
     (pkgs.writeShellScriptBin "wslview" ''
       url="''${1:-}"

@@ -17,7 +17,11 @@
   users.users.pallep = {
     isNormalUser = true;
     description = "Patrick";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "docker"
+    ];
     shell = pkgs.fish;
   };
 }

@@ -1,4 +1,11 @@
-{ config, lib, pkgs, agents, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  agents,
+  ...
+}:
+{
   programs.git = {
     enable = true;
     settings = {
@@ -300,29 +307,42 @@
 
   programs.starship.enable = true;
 
-
   programs.alacritty = {
     enable = true;
     settings = {
-      bell = { animation = "EaseOutExpo"; duration = 0; };
+      bell = {
+        animation = "EaseOutExpo";
+        duration = 0;
+      };
       cursor = {
         blink_interval = 500;
         blink_timeout = 5;
         unfocused_hollow = false;
-        style = { blinking = "Off"; shape = "Block"; };
+        style = {
+          blinking = "Off";
+          shape = "Block";
+        };
       };
       env.TERM = "xterm-256color";
       general.live_config_reload = true;
       mouse = {
         hide_when_typing = true;
-        bindings = [{ action = "PasteSelection"; mouse = "Middle"; }];
+        bindings = [
+          {
+            action = "PasteSelection";
+            mouse = "Middle";
+          }
+        ];
       };
       selection.semantic_escape_chars = ",│`|:\"' ()[]{}<>";
       window = {
         decorations = "full";
         dynamic_title = true;
         startup_mode = "Maximized";
-        padding = { x = 4; y = 4; };
+        padding = {
+          x = 4;
+          y = 4;
+        };
       };
     };
   };
@@ -364,10 +384,10 @@
 
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = {
-    "text/html"                = "chromium-browser.desktop";
-    "x-scheme-handler/http"    = "chromium-browser.desktop";
-    "x-scheme-handler/https"   = "chromium-browser.desktop";
-    "x-scheme-handler/about"   = "chromium-browser.desktop";
+    "text/html" = "chromium-browser.desktop";
+    "x-scheme-handler/http" = "chromium-browser.desktop";
+    "x-scheme-handler/https" = "chromium-browser.desktop";
+    "x-scheme-handler/about" = "chromium-browser.desktop";
     "x-scheme-handler/unknown" = "chromium-browser.desktop";
     "x-scheme-handler/msteams" = "teams-for-linux.desktop";
     "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
@@ -379,8 +399,7 @@
   # tmux-which-key menu; see the plugin entry in programs.tmux above. XDG mode
   # makes the plugin read this and write its generated init.tmux under
   # ~/.local/share, rather than into its own (read-only) store path.
-  xdg.configFile."tmux/plugins/tmux-which-key/config.yaml".source =
-    ../../config/tmux/which-key.yaml;
+  xdg.configFile."tmux/plugins/tmux-which-key/config.yaml".source = ../../config/tmux/which-key.yaml;
 
   # tmux-which-key autobuilds its menu from config.yaml into init.tmux, but it
   # first copies its example init into that path, and the example comes from the

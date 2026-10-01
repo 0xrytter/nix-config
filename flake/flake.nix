@@ -22,96 +22,124 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, llm-agents, stylix, sops-nix }:
-  let
-    system = "x86_64-linux";
-    agents = llm-agents.packages.${system};
-    # crush is FSL-1.1-MIT (unfree) and claude-code is under Anthropic's
-    # unfree terms; allow just those two, not all unfree packages.
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfreePredicate = pkg:
-        builtins.elem (nixpkgs.lib.getName pkg) [ "crush" "claude-code" ];
-    };
-    homeManagerModule = users: {
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
-      home-manager.backupFileExtension = "hm-bak";
-      home-manager.extraSpecialArgs = { inherit agents; };
-      home-manager.sharedModules = [
-        nixvim.homeModules.nixvim
-        sops-nix.homeManagerModules.sops
-      ];
-      home-manager.users = users;
-    };
-    mkHome = username: homeDirectory: userModule: home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.${system};
-      extraSpecialArgs = { inherit agents; };
-      modules = [
-        nixvim.homeModules.nixvim
-        sops-nix.homeManagerModules.sops
-        stylix.homeModules.stylix
-        {
-          home.username = username;
-          home.homeDirectory = homeDirectory;
-        }
-        (import userModule)
-      ];
-    };
-  in
-  {
-    homeConfigurations = {
-      wsl2 = home-manager.lib.homeManagerConfiguration {
-        pkgs = pkgs;
-        extraSpecialArgs = { inherit agents; };
-        modules = [
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      nixvim,
+      llm-agents,
+      stylix,
+      sops-nix,
+      treefmt-nix,
+    }:
+    let
+      system = "x86_64-linux";
+      agents = llm-agents.packages.${system};
+      # crush is FSL-1.1-MIT (unfree) and claude-code is under Anthropic's
+      # unfree terms; allow just those two, not all unfree packages.
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfreePredicate =
+          pkg:
+          builtins.elem (nixpkgs.lib.getName pkg) [
+            "crush"
+            "claude-code"
+          ];
+      };
+      homeManagerModule = users: {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.backupFileExtension = "hm-bak";
+        home-manager.extraSpecialArgs = { inherit agents; };
+        home-manager.sharedModules = [
           nixvim.homeModules.nixvim
           sops-nix.homeManagerModules.sops
-          stylix.homeModules.stylix
-          (import ./hosts/wsl2/home.nix)
         ];
+        home-manager.users = users;
+      };
+      mkHome =
+        username: homeDirectory: userModule:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.${system};
+          extraSpecialArgs = { inherit agents; };
+          modules = [
+            nixvim.homeModules.nixvim
+            sops-nix.homeManagerModules.sops
+            stylix.homeModules.stylix
+            {
+              home.username = username;
+              home.homeDirectory = homeDirectory;
+            }
+            (import userModule)
+          ];
+        };
+    in
+    {
+      # `nix fmt`: the one format command for this repo, for humans and agents.
+      formatter.${system} =
+        (treefmt-nix.lib.evalModule pkgs {
+          projectRootFile = "flake/flake.nix";
+          programs.nixfmt.enable = true;
+          programs.shfmt.enable = true;
+        }).config.build.wrapper;
+
+      homeConfigurations = {
+        wsl2 = home-manager.lib.homeManagerConfiguration {
+          pkgs = pkgs;
+          extraSpecialArgs = { inherit agents; };
+          modules = [
+            nixvim.homeModules.nixvim
+            sops-nix.homeManagerModules.sops
+            stylix.homeModules.stylix
+            (import ./hosts/wsl2/home.nix)
+          ];
+        };
+
+        T480 = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
+        DIY-Desktop = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
+        patrick-desktop = mkHome "pallep" "/home/pallep" ./users/patrick/home.nix;
       };
 
-      T480 = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
-      DIY-Desktop = mkHome "rytter" "/home/rytter" ./users/rytter/home.nix;
-      patrick-desktop = mkHome "pallep" "/home/pallep" ./users/patrick/home.nix;
+      nixosConfigurations = {
+        DIY-Desktop = nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit agents; };
+          modules = [
+            ./hosts/DIY-Desktop/configuration.nix
+            home-manager.nixosModules.home-manager
+            stylix.nixosModules.stylix
+            (homeManagerModule { rytter = import ./users/rytter/home.nix; })
+          ];
+        };
+
+        T480 = nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit agents; };
+          modules = [
+            ./hosts/T480/configuration.nix
+            home-manager.nixosModules.home-manager
+            stylix.nixosModules.stylix
+            (homeManagerModule { rytter = import ./users/rytter/home.nix; })
+          ];
+        };
+
+        patrick-desktop = nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit agents; };
+          modules = [
+            ./hosts/patrick-desktop/configuration.nix
+            home-manager.nixosModules.home-manager
+            stylix.nixosModules.stylix
+            (homeManagerModule { pallep = import ./users/patrick/home.nix; })
+          ];
+        };
+      };
     };
-
-    nixosConfigurations = {
-      DIY-Desktop = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit agents; };
-        modules = [
-          ./hosts/DIY-Desktop/configuration.nix
-          home-manager.nixosModules.home-manager
-          stylix.nixosModules.stylix
-          (homeManagerModule { rytter = import ./users/rytter/home.nix; })
-        ];
-      };
-
-      T480 = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit agents; };
-        modules = [
-          ./hosts/T480/configuration.nix
-          home-manager.nixosModules.home-manager
-          stylix.nixosModules.stylix
-          (homeManagerModule { rytter = import ./users/rytter/home.nix; })
-        ];
-      };
-
-      patrick-desktop = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit agents; };
-        modules = [
-          ./hosts/patrick-desktop/configuration.nix
-          home-manager.nixosModules.home-manager
-          stylix.nixosModules.stylix
-          (homeManagerModule { pallep = import ./users/patrick/home.nix; })
-        ];
-      };
-    };
-  };
 }

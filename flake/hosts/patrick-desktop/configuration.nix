@@ -1,4 +1,10 @@
-{ config, pkgs, lib, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/base.nix
@@ -10,7 +16,7 @@
   ];
 
   networking.hostName = "patrick-desktop";
-  
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
   # GRUB for multi-boot — auto-detects Windows and other drives
   boot.loader.systemd-boot.enable = lib.mkForce false;

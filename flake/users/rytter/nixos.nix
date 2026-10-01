@@ -45,7 +45,12 @@
     "monitor.bluez5.properties" = {
       "bluez5.enable-msbc" = true;
       "bluez5.enable-hw-volume" = true;
-      "bluez5.headset-roles" = [ "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag" ];
+      "bluez5.headset-roles" = [
+        "hsp_hs"
+        "hsp_ag"
+        "hfp_hf"
+        "hfp_ag"
+      ];
     };
   };
   services.pipewire.wireplumber.extraConfig.suspendOnIdle = {
@@ -63,8 +68,18 @@
   users.users.rytter = {
     isNormalUser = true;
     description = "Jakob Rytter";
-    extraGroups = [ "networkmanager" "wheel" "docker" "keyd" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "docker"
+      "keyd"
+    ];
     shell = pkgs.fish;
-    packages = with pkgs; [ mullvad-vpn qbittorrent webcord jetbrains.pycharm ];
+    packages = with pkgs; [
+      mullvad-vpn
+      qbittorrent
+      webcord
+      jetbrains.pycharm
+    ];
   };
 }

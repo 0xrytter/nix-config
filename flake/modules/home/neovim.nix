@@ -28,23 +28,89 @@
     };
 
     keymaps = [
-      { mode = "n"; key = "<leader>x"; action = ":bd<CR>"; options.desc = "Close current buffer"; }
-      { mode = "n"; key = "<leader>ya"; action = ":%y+<CR>"; options.desc = "Yank entire buffer to clipboard"; }
-      { mode = "n"; key = "n"; action = "nzz"; options.desc = "Next search result centered"; }
-      { mode = "n"; key = "N"; action = "Nzz"; options.desc = "Prev search result centered"; }
-      { mode = "n"; key = "<leader>yp"; action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:p')) end"; options.desc = "Yank absolute file path"; }
-      { mode = "n"; key = "<leader>yr"; action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:.')) end"; options.desc = "Yank relative file path"; }
-      { mode = "n"; key = "<Esc>"; action = "<cmd>nohlsearch<CR>"; }
-      { mode = "n"; key = "<leader>q"; action.__raw = "vim.diagnostic.setloclist"; options.desc = "Open diagnostic Quickfix list"; }
-      { mode = "t"; key = "<Esc><Esc>"; action = "<C-\\><C-n>"; options.desc = "Exit terminal mode"; }
-      { mode = "n"; key = "<C-h>"; action = "<C-w><C-h>"; options.desc = "Move focus left"; }
-      { mode = "n"; key = "<C-l>"; action = "<C-w><C-l>"; options.desc = "Move focus right"; }
-      { mode = "n"; key = "<C-j>"; action = "<C-w><C-j>"; options.desc = "Move focus down"; }
-      { mode = "n"; key = "<C-k>"; action = "<C-w><C-k>"; options.desc = "Move focus up"; }
+      {
+        mode = "n";
+        key = "<leader>x";
+        action = ":bd<CR>";
+        options.desc = "Close current buffer";
+      }
+      {
+        mode = "n";
+        key = "<leader>ya";
+        action = ":%y+<CR>";
+        options.desc = "Yank entire buffer to clipboard";
+      }
+      {
+        mode = "n";
+        key = "n";
+        action = "nzz";
+        options.desc = "Next search result centered";
+      }
+      {
+        mode = "n";
+        key = "N";
+        action = "Nzz";
+        options.desc = "Prev search result centered";
+      }
+      {
+        mode = "n";
+        key = "<leader>yp";
+        action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:p')) end";
+        options.desc = "Yank absolute file path";
+      }
+      {
+        mode = "n";
+        key = "<leader>yr";
+        action.__raw = "function() vim.fn.setreg('+', vim.fn.expand('%:.')) end";
+        options.desc = "Yank relative file path";
+      }
+      {
+        mode = "n";
+        key = "<Esc>";
+        action = "<cmd>nohlsearch<CR>";
+      }
+      {
+        mode = "n";
+        key = "<leader>q";
+        action.__raw = "vim.diagnostic.setloclist";
+        options.desc = "Open diagnostic Quickfix list";
+      }
+      {
+        mode = "t";
+        key = "<Esc><Esc>";
+        action = "<C-\\><C-n>";
+        options.desc = "Exit terminal mode";
+      }
+      {
+        mode = "n";
+        key = "<C-h>";
+        action = "<C-w><C-h>";
+        options.desc = "Move focus left";
+      }
+      {
+        mode = "n";
+        key = "<C-l>";
+        action = "<C-w><C-l>";
+        options.desc = "Move focus right";
+      }
+      {
+        mode = "n";
+        key = "<C-j>";
+        action = "<C-w><C-j>";
+        options.desc = "Move focus down";
+      }
+      {
+        mode = "n";
+        key = "<C-k>";
+        action = "<C-w><C-k>";
+        options.desc = "Move focus up";
+      }
     ];
 
     autoGroups = {
-      "kickstart-highlight-yank" = { clear = true; };
+      "kickstart-highlight-yank" = {
+        clear = true;
+      };
     };
 
     autoCmd = [
@@ -75,14 +141,46 @@
       which-key = {
         enable = true;
         settings.spec = [
-          { __unkeyed-1 = "<leader>c"; group = "[C]ode"; mode = [ "n" "x" ]; }
-          { __unkeyed-1 = "<leader>d"; group = "[D]ocument"; }
-          { __unkeyed-1 = "<leader>r"; group = "[R]ename"; }
-          { __unkeyed-1 = "<leader>s"; group = "[S]earch"; }
-          { __unkeyed-1 = "<leader>w"; group = "[W]orkspace"; }
-          { __unkeyed-1 = "<leader>t"; group = "[T]oggle"; }
-          { __unkeyed-1 = "<leader>h"; group = "Git [H]unk"; mode = [ "n" "v" ]; }
-          { __unkeyed-1 = "<leader>g"; group = "[G]it diffview"; }
+          {
+            __unkeyed-1 = "<leader>c";
+            group = "[C]ode";
+            mode = [
+              "n"
+              "x"
+            ];
+          }
+          {
+            __unkeyed-1 = "<leader>d";
+            group = "[D]ocument";
+          }
+          {
+            __unkeyed-1 = "<leader>r";
+            group = "[R]ename";
+          }
+          {
+            __unkeyed-1 = "<leader>s";
+            group = "[S]earch";
+          }
+          {
+            __unkeyed-1 = "<leader>w";
+            group = "[W]orkspace";
+          }
+          {
+            __unkeyed-1 = "<leader>t";
+            group = "[T]oggle";
+          }
+          {
+            __unkeyed-1 = "<leader>h";
+            group = "Git [H]unk";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            __unkeyed-1 = "<leader>g";
+            group = "[G]it diffview";
+          }
         ];
       };
 
@@ -136,7 +234,10 @@
             "<C-Space>" = "cmp.mapping.complete()";
           };
           sources = [
-            { name = "lazydev"; group_index = 0; }
+            {
+              name = "lazydev";
+              group_index = 0;
+            }
             { name = "nvim_lsp"; }
             { name = "luasnip"; }
             { name = "path"; }
@@ -186,9 +287,27 @@
           indent.disable = [ "ruby" ];
           auto_install = true;
           ensure_installed = [
-            "bash" "c" "diff" "html" "lua" "luadoc" "markdown" "markdown_inline"
-            "query" "vim" "vimdoc" "elixir" "heex" "go" "python" "css" "json"
-            "nix" "tsx" "typescript" "javascript"
+            "bash"
+            "c"
+            "diff"
+            "html"
+            "lua"
+            "luadoc"
+            "markdown"
+            "markdown_inline"
+            "query"
+            "vim"
+            "vimdoc"
+            "elixir"
+            "heex"
+            "go"
+            "python"
+            "css"
+            "json"
+            "nix"
+            "tsx"
+            "typescript"
+            "javascript"
           ];
         };
       };
@@ -201,9 +320,13 @@
       mini = {
         enable = true;
         modules = {
-          ai = { n_lines = 500; };
+          ai = {
+            n_lines = 500;
+          };
           surround = { };
-          statusline = { use_icons = true; };
+          statusline = {
+            use_icons = true;
+          };
         };
       };
 

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # The workstation's trust group: one file, one anchor. Never the host files.
   #
@@ -41,7 +46,10 @@ let
   # file). Mode 0400 because everything that reads it runs as this user.
   secfile = pkgs.writeShellApplication {
     name = "secfile";
-    runtimeInputs = [ pkgs.sops pkgs.coreutils ];
+    runtimeInputs = [
+      pkgs.sops
+      pkgs.coreutils
+    ];
     text = ''
       ${preamble}
       if [ "$#" -ne 1 ]; then
@@ -80,7 +88,13 @@ let
   # half, and refuse unless it matches the anchor we expect.
   unlock = pkgs.writeShellApplication {
     name = "unlock";
-    runtimeInputs = [ pkgs.age pkgs.coreutils pkgs.gnugrep pkgs.openssh pkgs.wl-clipboard ];
+    runtimeInputs = [
+      pkgs.age
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.openssh
+      pkgs.wl-clipboard
+    ];
     text = ''
       anchor_dir="''${XDG_RUNTIME_DIR}/sops/age"
       anchor="$anchor_dir/keys.txt"
@@ -149,7 +163,11 @@ let
   };
 in
 {
-  home.packages = [ sec secfile unlock ];
+  home.packages = [
+    sec
+    secfile
+    unlock
+  ];
 
   # Point sops at the tmpfs anchor. Declared as a conf.d snippet rather than
   # home.sessionVariables so the value is written verbatim and expanded by fish

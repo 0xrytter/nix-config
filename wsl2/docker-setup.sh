@@ -43,7 +43,7 @@ if [ "$SYSTEMD_BOOT" = "systemd" ]; then
   sudo systemctl start docker
 else
   if ! pgrep -x dockerd >/dev/null 2>&1; then
-    sudo nohup /usr/bin/dockerd > /tmp/dockerd.log 2>&1 &
+    sudo nohup /usr/bin/dockerd >/tmp/dockerd.log 2>&1 &
     echo "  -> systemd inactive; started dockerd in the background (log: /tmp/dockerd.log)"
   else
     echo "  -> dockerd already running"

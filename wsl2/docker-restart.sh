@@ -15,7 +15,7 @@ else
   echo "systemd inactive; restarting dockerd manually..."
   sudo pkill -x dockerd || true
   sleep 1
-  sudo nohup /usr/bin/dockerd > /tmp/dockerd.log 2>&1 &
+  sudo nohup /usr/bin/dockerd >/tmp/dockerd.log 2>&1 &
 fi
 
 for _ in $(seq 1 15); do

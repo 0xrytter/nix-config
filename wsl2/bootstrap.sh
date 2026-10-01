@@ -23,7 +23,7 @@ fi
 
 mkdir -p "$HOME/.config/nix"
 if ! grep -q '^experimental-features' "$HOME/.config/nix/nix.conf" 2>/dev/null; then
-  echo 'experimental-features = nix-command flakes' >> "$HOME/.config/nix/nix.conf"
+  echo 'experimental-features = nix-command flakes' >>"$HOME/.config/nix/nix.conf"
 fi
 
 if ! command -v home-manager >/dev/null 2>&1; then

@@ -12,7 +12,8 @@ let
     Endpoint = SERVER_IP:51820
     PersistentKeepalive = 25
   '';
-in {
+in
+{
   nixpkgs.overlays = [
     (final: prev: {
       openldap = prev.openldap.overrideAttrs { doCheck = false; };
@@ -22,7 +23,10 @@ in {
 
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.permittedInsecurePackages = [ "beekeeper-studio-5.3.4" ];
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.settings.substituters = [
     "https://cache.nixos.org"
     "https://nix-community.cachix.org"
@@ -65,19 +69,31 @@ in {
     codex
     claude-code
     bitwarden-desktop
-    git gh
+    git
+    gh
     wgnord
     wl-clipboard
-    tmux neovim
+    tmux
+    neovim
     jetbrains.rider
-    alacritty ghostty
-    lazygit lazydocker docker-compose
-    (with dotnetCorePackages; combinePackages [ sdk_8_0_4xx sdk_9_0 ])
+    alacritty
+    ghostty
+    lazygit
+    lazydocker
+    docker-compose
+    (
+      with dotnetCorePackages;
+      combinePackages [
+        sdk_8_0_4xx
+        sdk_9_0
+      ]
+    )
     python3
     beekeeper-studio
     vlc
     discord
-    obsidian keepassxc
+    obsidian
+    keepassxc
     popsicle
   ];
 }
