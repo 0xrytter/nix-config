@@ -48,6 +48,11 @@ supervision replaces practice — so split the work by whose hands it needs:
 - The exact flavour varies (NixOS, another Linux distro, or WSL running either
   under Windows) but the principle is the same: packages are never installed
   ad-hoc into the system.
+- **Never use the distro's package manager.** No `apt`, `dnf`, `pacman`,
+  `brew`, `pip install --user`, `npm -g` or `curl | sh` installers. A tool
+  needed once comes from `nix shell nixpkgs#<pkg>`; a tool needed for a project
+  goes in its flake; a tool needed everywhere goes in nix-config. Even when an
+  upstream guide says `apt install`, the answer is the Nix package.
 - Each project includes a `flake.nix` and uses direnv to resolve the flake and
   provide the dev environment via `nix develop`. Prefer that over local
   installs or global tools.
