@@ -534,6 +534,18 @@
         end,
       })
 
+      -- roslyn_ls starts only under a .sln/.csproj. Loose files (LeetCode
+      -- solutions) fall back to their own directory: Roslyn's loose-file mode,
+      -- with completion and analyzer hints but no compiler errors.
+      local roslyn_root = vim.lsp.config.roslyn_ls.root_dir
+      vim.lsp.config('roslyn_ls', {
+        root_dir = function(bufnr, cb)
+          local found = false
+          roslyn_root(bufnr, function(dir) found = true; cb(dir) end)
+          if not found then cb(vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr))) end
+        end,
+      })
+
       -- conform format keymap
       vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
         require('conform').format { async = true, lsp_format = 'fallback' }
