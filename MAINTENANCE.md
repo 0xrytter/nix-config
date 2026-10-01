@@ -96,6 +96,10 @@ first. Known so far:
   `.sh` file under `flake/config/` and load it with `builtins.readFile`, as
   `git-stamp` already is.
 - **`repothing` is not on PATH**, so `repothing check` needs `go run`.
+- **nvim's cursor is hard to see in insert mode** (noted 2026-10-02). Not yet
+  diagnosed; possibly related to the cursor colour/shape notes under Loose ends
+  below (OSC 12, the multiplexer relaying it). Collect when it happens: which
+  terminal, inside herdr or not, after which program ran.
 
 Not part of the cleanup, a small item on its own: `gh` keeps a plaintext token in
 `~/.config/gh/hosts.yml`. The fix is in `~/src/secrets/AGENT-SANDBOXING.md`.
