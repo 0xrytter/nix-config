@@ -77,6 +77,29 @@ an absolute path inside a login shell.
    copies must stay identical.
 5. **Keep the version table above current** whenever a bump lands.
 
+## Cleanup backlog (deferred, collected 2026-10-01/02)
+
+The repo works but needs a large cleanup; deliberately not started, small items
+first. Known so far:
+
+- **The NixOS hosts are legacy and do not evaluate.** DIY-Desktop, T480 and
+  patrick-desktop all fail on `gtk.gtk4.theme`, defined by both stylix and
+  `modules/home/common.nix`. Desktops run Nix on another distro now, so these
+  are to be deleted or archived (patrick-desktop's user may want a fork).
+  Verify changes against `homeConfigurations.wsl2` until then.
+- **`rebuild.sh` is NixOS-only** and sits at the top level, easy to run on WSL2
+  by mistake (`nixos-rebuild: command not found`). Goes with the hosts.
+- **Shell embedded in Nix strings.** `sec`, `secfile` and `unlock`
+  (`modules/home/secrets.nix`), `cclaude` and `start-session`
+  (`modules/home/wsl2.nix`) are `writeShellApplication` scripts written inline,
+  full of `''${` escapes and invisible to shell tooling. Move each to its own
+  `.sh` file under `flake/config/` and load it with `builtins.readFile`, as
+  `git-stamp` already is.
+- **`repothing` is not on PATH**, so `repothing check` needs `go run`.
+
+Not part of the cleanup, a small item on its own: `gh` keeps a plaintext token in
+`~/.config/gh/hosts.yml`. The fix is in `~/src/secrets/AGENT-SANDBOXING.md`.
+
 ## Changes made 2026-09-29 (git hooks strip AI attribution)
 
 Any harness that stamps a commit now gets its stamp removed, in one place,
