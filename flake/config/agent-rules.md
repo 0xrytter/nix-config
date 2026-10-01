@@ -304,9 +304,12 @@ tree:
 Utility scripts are disposable programs with a promotion path, not a language
 choice:
 
-1. **Bash** — anything ~20 lines touching files, ports, commands. Half are
-   written, used twice, deleted. That is fine; they're honest about being
-   disposable.
+1. **Bash** — disposable only: ~20 lines touching files, ports, commands, used
+   a few times and deleted. That is fine; they're honest about being
+   disposable. Anything that persists — a git hook, a tool other things call,
+   a deploy step — skips this rung and starts in Go (or the project's own
+   language). The user reads shell but does not write it, so lasting shell is
+   code nobody maintains.
 2. **Python** — promote when the task needs actual parsing, control flow, or
    a hyper-specific library. Still disposable; a file in the repo's tooling
    folder, no types, no test suite.
