@@ -206,6 +206,11 @@
           pyright.enable = true;
           ruff.enable = true;
           gopls.enable = true;
+          # C#: Microsoft's Roslyn server; it finds the .sln/.csproj itself, and
+          # dotnet comes from the project's flake. lspconfig's roslyn_ls, not
+          # plugins.roslyn: that plugin passes --daemon-mode, which the pinned
+          # roslyn-ls (5.11) does not know yet.
+          roslyn_ls.enable = true;
           jsonls.enable = true;
           cssls.enable = true;
           dockerls.enable = true;
@@ -269,6 +274,7 @@
             elixir = [ "lsp" ];
             go = [ "gofumpt" ];
             python = [ "ruff" ];
+            cs = [ "csharpier" ];
             nix = [ "nixfmt" ];
             sh = [ "shfmt" ];
             json = [ "prettierd" ];
@@ -308,6 +314,7 @@
             "tsx"
             "typescript"
             "javascript"
+            "c_sharp"
           ];
         };
       };
@@ -356,6 +363,16 @@
 
       diffview.enable = true;
 
+      # LeetCode in nvim, C# first. Note: it keeps its session cookie in
+      # plaintext under stdpath('cache')/leetcode.
+      leetcode = {
+        enable = true;
+        settings = {
+          lang = "csharp";
+          storage.home = "~/src/leetcode";
+        };
+      };
+
       neotest = {
         enable = true;
         adapters = {
@@ -403,6 +420,10 @@
     extraPackages = with pkgs; [
       gofumpt
       ruff
+      # Pinned to its own .NET runtime: by default the wrapper runs on whatever
+      # `dotnet` is on PATH, and a project flake's dotnet from another nixpkgs
+      # pin fails to load against this glibc.
+      (csharpier.overrideAttrs { useDotnetFromEnv = false; })
       nixfmt-rfc-style
       shfmt
     ];
