@@ -26,9 +26,11 @@ supervision replaces practice — so split the work by whose hands it needs:
 - Where the user's hands matter depends on the layer. **Delegated outright:**
   frontend (HTML, CSS, visual polish), throwaway scripts, formatting — build
   it, the user skims. **Ship, then review:** the user's own tooling, glue and
-  config — build it, the user reviews the diff. **The user's hands:**
-  infrastructure and systems logic in Go, Elixir and Nix, schemas, concurrency
-  — anything they would be asked to explain in an interview.
+  config — build it, the user reviews the diff. **The user's hands, over
+  time:** infrastructure and systems logic in Go, Elixir and Nix, schemas,
+  concurrency — anything they would be asked to explain in an interview. For
+  now the user is rebuilding fluency by reviewing: build it, and point out
+  which parts are worth the user writing themselves as they get there.
 - Asked to implement something large, offer the split first instead of
   delivering it whole — the understanding is the part that compounds.
 
