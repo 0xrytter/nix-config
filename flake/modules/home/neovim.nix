@@ -566,25 +566,55 @@
       vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = '[G]it file [H]istory' })
       vim.keymap.set('n', '<leader>gH', '<cmd>DiffviewFileHistory<cr>',   { desc = '[G]it branch [H]istory' })
       vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>',         { desc = '[G]it diffview [Q]uit' })
-      -- Review gate: walk the unpushed commits, stamp each with a one-line summary.
+      -- Review gate: each unpushed commit opens as one plain `git show` buffer,
+      -- so <leader>ce/cq work on it like any file, and <leader>gs stamps it.
       -- The pre-push hook refuses unstamped commits (see git-stamp in common.nix).
-      vim.keymap.set('n', '<leader>gr', '<cmd>DiffviewFileHistory --range=@{upstream}..HEAD<cr>', { desc = '[G]it [R]eview unpushed' })
-      vim.keymap.set('n', '<leader>gs', function()
-        -- ponytail: panel.cur_item is diffview internals, not API; if an update
-        -- breaks it, take the sha from the diff buffer's diffview:// name instead.
-        local view = require('diffview.lib').get_current_view()
-        local entry = view and view.panel.cur_item and view.panel.cur_item[1]
-        if not (entry and entry.commit) then
-          return vim.notify('stamp: select a commit in a diffview history first', vim.log.levels.WARN)
+      local function review_commit(sha)
+        local name = 'review://' .. sha
+        if vim.fn.bufexists(name) == 1 then return vim.cmd.buffer(name) end
+        local res = vim.system({ 'git', 'show', '--stat', '--patch', sha }, { text = true }):wait()
+        if res.code ~= 0 then
+          return vim.notify('git show: ' .. res.stderr, vim.log.levels.ERROR)
         end
-        local sha = entry.commit.hash
-        vim.ui.input({ prompt = ('Stamp %s, what does it do? '):format(sha:sub(1, 8)) }, function(summary)
+        local buf = vim.api.nvim_create_buf(true, true)
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(res.stdout, '\n'))
+        vim.api.nvim_buf_set_name(buf, name)
+        vim.bo[buf].filetype = 'git'
+        vim.bo[buf].modifiable = false
+        vim.bo[buf].bufhidden = 'wipe'
+        vim.b[buf].review_sha = sha
+        vim.api.nvim_set_current_buf(buf)
+      end
+      vim.keymap.set('n', '<leader>gr', function()
+        local actions, state = require('telescope.actions'), require('telescope.actions.state')
+        builtin.git_commits {
+          prompt_title = 'Unpushed commits',
+          git_command = { 'git', 'log', '--pretty=oneline', '--abbrev-commit', '@{upstream}..HEAD' },
+          attach_mappings = function(prompt_bufnr)
+            actions.select_default:replace(function()
+              local entry = state.get_selected_entry()
+              actions.close(prompt_bufnr)
+              if not entry then
+                return vim.notify('review: no unpushed commit selected', vim.log.levels.WARN)
+              end
+              review_commit(entry.value)
+            end)
+            return true
+          end,
+        }
+      end, { desc = '[G]it [R]eview unpushed commits' })
+      vim.keymap.set('n', '<leader>gs', function()
+        local sha = vim.b.review_sha
+        if not sha then
+          return vim.notify('stamp: open a commit with <leader>gr first', vim.log.levels.WARN)
+        end
+        vim.ui.input({ prompt = ('Stamp %s, what does it do? '):format(sha) }, function(summary)
           if not summary or summary == "" then return end
           local res = vim.system({ 'git', 'stamp', sha, summary }, { text = true }):wait()
           if res.code ~= 0 then
             return vim.notify('stamp failed: ' .. res.stderr, vim.log.levels.ERROR)
           end
-          vim.notify(('stamped %s'):format(sha:sub(1, 8)))
+          vim.notify(('stamped %s'):format(sha))
         end)
       end, { desc = '[G]it [S]tamp commit as reviewed' })
 
