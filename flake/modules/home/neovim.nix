@@ -369,7 +369,7 @@
         enable = true;
         settings = {
           lang = "csharp";
-          storage.home = "~/src/leetcode";
+          storage.home = "~/src/practice/leetcode";
         };
       };
 
