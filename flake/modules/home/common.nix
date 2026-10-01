@@ -12,8 +12,9 @@
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
-      # Show review stamps (git-stamp below) in git log.
-      notes.displayRef = "refs/notes/reviewed";
+      # `git stamps`: the log with review stamps (git-stamp below). Not
+      # notes.displayRef, which warns on every log in a repo with no stamps yet.
+      alias.stamps = "log --notes=reviewed";
       "credential \"https://github.com\"".helper = [
         ""
         "!/run/current-system/sw/bin/gh auth git-credential"
