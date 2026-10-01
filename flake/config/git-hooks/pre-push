@@ -36,5 +36,5 @@ printf 'pre-push: %s commit(s) not reviewed:\n' "$(echo $unstamped | wc -w)" >&2
 for c in $unstamped; do
   git log -1 --format='  %h %s' "$c" >&2
 done
-printf 'Review them (nvim <leader>gr), stamp each (<leader>gs or `git stamp <sha>`), push again.\n' >&2
+printf 'Review them, then `git stamp` (all unpushed, one summary) or <leader>gs per commit, and push again.\n' >&2
 exit 1
