@@ -91,6 +91,10 @@ tmpfs per session by `unlock`. Work with that, never around it:
   `secfile` on their own, to test them, or to see a value: call them only inside
   the command that consumes the value. To check a credential, ask whether it is
   reachable or valid (an API call's status code), never look at it.
+- **Never touch the anchor or `secfile`'s output.** The file at
+  `$SOPS_AGE_KEY_FILE` is the master key to every secret, and
+  `$XDG_RUNTIME_DIR/secrets/` holds decrypted values: never read, list, copy or
+  search either, whatever the reason. Only `unlock`, `sec` and `secfile` go there.
 - **"anchor not unlocked, run `unlock`" is the human's step, not a bug.** Report
   it and stop. Never make it go away by writing the key, a copy of the anchor, or
   the decrypted value anywhere.
