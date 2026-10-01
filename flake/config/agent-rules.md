@@ -87,6 +87,10 @@ tmpfs per session by `unlock`. Work with that, never around it:
   returns a tmpfs path. The old plaintext locations are gone
   (`~/.config/opencode/secrets/`, `~/.ssh/id_ed25519`, `~/.config/iacthing/*.key`),
   so a consumer still naming one is a **bug to fix, not a path to recreate**.
+- **`sec` is the most sensitive command on this machine.** Never run `sec` or
+  `secfile` on their own, to test them, or to see a value: call them only inside
+  the command that consumes the value. To check a credential, ask whether it is
+  reachable or valid (an API call's status code), never look at it.
 - **"anchor not unlocked, run `unlock`" is the human's step, not a bug.** Report
   it and stop. Never make it go away by writing the key, a copy of the anchor, or
   the decrypted value anywhere.
