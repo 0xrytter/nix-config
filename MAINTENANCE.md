@@ -96,10 +96,11 @@ first. Known so far:
   `.sh` file under `flake/config/` and load it with `builtins.readFile`, as
   `git-stamp` already is.
 - **`repothing` is not on PATH**, so `repothing check` needs `go run`.
-- **nvim's cursor is hard to see in insert mode** (noted 2026-10-02). Not yet
-  diagnosed; possibly related to the cursor colour/shape notes under Loose ends
-  below (OSC 12, the multiplexer relaying it). Collect when it happens: which
-  terminal, inside herdr or not, after which program ran.
+- **Resolved 2026-10-02: nvim's insert-mode cursor stayed a block.** herdr's
+  `host_cursor = "auto"` draws its own block cursor on WSL (against ConPTY
+  flicker) and swallows the shape apps ask for. `[ui] host_cursor = "native"` in
+  `flake/config/herdr.toml` fixes it; herdr reads it only at startup, so a
+  running session needs a restart, not `herdr server reload-config`.
 
 Not part of the cleanup, a small item on its own: `gh` keeps a plaintext token in
 `~/.config/gh/hosts.yml`. The fix is in `~/src/secrets/AGENT-SANDBOXING.md`.
