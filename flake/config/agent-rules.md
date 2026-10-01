@@ -48,14 +48,21 @@ supervision replaces practice — so split the work by whose hands it needs:
 - The exact flavour varies (NixOS, another Linux distro, or WSL running either
   under Windows) but the principle is the same: packages are never installed
   ad-hoc into the system.
-- **Never use the distro's package manager.** No `apt`, `dnf`, `pacman`,
-  `brew`, `pip install --user`, `npm -g` or `curl | sh` installers. A tool
-  needed once comes from `nix shell nixpkgs#<pkg>`; a tool needed for a project
-  goes in its flake; a tool needed everywhere goes in nix-config. Even when an
-  upstream guide says `apt install`, the answer is the Nix package.
-- Each project includes a `flake.nix` and uses direnv to resolve the flake and
-  provide the dev environment via `nix develop`. Prefer that over local
-  installs or global tools.
+- **Never use the distro's package manager on the machine.** No `apt`, `dnf`,
+  `pacman`, `brew`, `pip install --user`, `npm -g` or `curl | sh` installers. A
+  tool needed once comes from `nix shell nixpkgs#<pkg>`; a toolchain for a
+  project goes in its flake; a tool needed everywhere goes in nix-config. Even
+  when an upstream guide says `apt install`, the answer is the Nix package.
+- **A project's dependencies stay native.** `go.mod`, `mix.exs`,
+  `package.json`, `pyproject.toml`, `.csproj` and their lockfiles are the
+  contract with people who don't use Nix: installing into the project with the
+  ecosystem's own tool is correct, and the project must build from its README
+  without Nix. The flake wraps that (toolchain, dev shell, `nix fmt`); it never
+  replaces it. In repos the user doesn't own, add no Nix files at all — use
+  `nix shell` or a flake kept outside the repo.
+- Each of the user's own projects includes a `flake.nix` and uses direnv to
+  resolve the flake and provide the dev environment via `nix develop`. Prefer
+  that over local installs or global tools.
 - Every flake declares a `formatter` output via treefmt-nix, enabling the
   formatter for each language the project uses. `nix fmt` is the one format
   command: run it before every commit, and add it to any flake that lacks it.
