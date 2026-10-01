@@ -179,6 +179,12 @@ revert and retry from a different angle instead of unpicking by hand.
 - Making these commits is standing permission: commit unprompted as the work
   happens, rather than waiting to be asked. Pushing stays gated — local
   checkpoints are yours to make, the remote is not.
+- **Review stamps are the user's alone.** A pre-push hook refuses any commit
+  without a review stamp (a git note under `refs/notes/reviewed`), and the stamp
+  is the user's one-line summary in their own words — it is how they keep their
+  hands on what ships. Never run `git stamp`, never write to
+  `refs/notes/reviewed`, never set `stamp.skip`, never push with `--no-verify`.
+  When work is done, say which commits are waiting for review.
 
 ## Tests — mandatory, as documentation, not ceremony
 
