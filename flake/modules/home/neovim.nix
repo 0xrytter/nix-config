@@ -618,11 +618,44 @@
         vim.b[buf].review_sha = sha
         vim.api.nvim_set_current_buf(buf)
       end
-      vim.keymap.set('n', '<leader>gr', function()
+      -- Unpushed commits, oldest first, unreviewed on top. Stamps live in git,
+      -- so they are the progress: a long review can stop and resume tomorrow.
+      local function unpushed_commits()
+        local log = vim.system({ 'git', 'log', '--reverse', '--format=%H%x09%h%x09%s', 'HEAD', '--not', '--remotes' }, { text = true }):wait()
+        if log.code ~= 0 then return nil, log.stderr end
+        local notes = vim.system({ 'git', 'notes', '--ref=reviewed', 'list' }, { text = true }):wait()
+        if notes.code ~= 0 then return nil, notes.stderr end
+        local stamped = {}
+        for line in notes.stdout:gmatch('[^\n]+') do stamped[line:match('%S+$')] = true end
+        local rows = {}
+        for line in log.stdout:gmatch('[^\n]+') do
+          local sha, short, subject = line:match('^(%S+)\t(%S+)\t(.*)$')
+          rows[#rows + 1] = { sha = sha, short = short, subject = subject, stamped = stamped[sha] == true, i = #rows }
+        end
+        table.sort(rows, function(a, b)
+          if a.stamped ~= b.stamped then return not a.stamped end
+          return a.i < b.i
+        end)
+        return rows
+      end
+      local function review_picker()
+        local rows, err = unpushed_commits()
+        if not rows then return vim.notify('review: ' .. err, vim.log.levels.ERROR) end
+        if #rows == 0 then return vim.notify('review: nothing unpushed') end
+        local done = #vim.tbl_filter(function(r) return r.stamped end, rows)
         local actions, state = require('telescope.actions'), require('telescope.actions.state')
-        builtin.git_commits {
-          prompt_title = 'Unpushed commits',
-          git_command = { 'git', 'log', '--pretty=oneline', '--abbrev-commit', '@{upstream}..HEAD' },
+        require('telescope.pickers').new({}, {
+          prompt_title = ('Unpushed commits, %d/%d reviewed'):format(done, #rows),
+          finder = require('telescope.finders').new_table({
+            results = rows,
+            entry_maker = function(r)
+              return { value = r.sha, ordinal = r.subject, display = (r.stamped and '✓ ' or '· ') .. r.short .. '  ' .. r.subject }
+            end,
+          }),
+          sorter = require('telescope.config').values.generic_sorter({}),
+          previewer = require('telescope.previewers').new_termopen_previewer({
+            get_command = function(entry) return { 'git', 'show', '--stat', '--patch', entry.value } end,
+          }),
           attach_mappings = function(prompt_bufnr)
             actions.select_default:replace(function()
               local entry = state.get_selected_entry()
@@ -634,22 +667,23 @@
             end)
             return true
           end,
-        }
-      end, { desc = '[G]it [R]eview unpushed commits' })
+        }):find()
+      end
+      vim.keymap.set('n', '<leader>gr', review_picker, { desc = '[G]it [R]eview unpushed commits' })
       vim.keymap.set('n', '<leader>gs', function()
         local sha = vim.b.review_sha
         if not sha then
           return vim.notify('stamp: open a commit with <leader>gr first', vim.log.levels.WARN)
         end
-        vim.ui.input({ prompt = ('Stamp %s, what does it do? '):format(sha) }, function(summary)
+        vim.ui.input({ prompt = ('Stamp %s, what does it do? '):format(sha:sub(1, 7)) }, function(summary)
           if not summary or summary == "" then return end
           local res = vim.system({ 'git', 'stamp', sha, summary }, { text = true }):wait()
           if res.code ~= 0 then
             return vim.notify('stamp failed: ' .. res.stderr, vim.log.levels.ERROR)
           end
-          vim.notify(('stamped %s'):format(sha))
+          review_picker() -- straight on to the next one
         end)
-      end, { desc = '[G]it [S]tamp commit as reviewed' })
+      end, { desc = '[G]it [S]tamp commit, then the next' })
 
       -- Ask DeepSeek about the visual selection, with follow-ups in the same
       -- float. A raw Messages call to Hyper with thinking disabled answers in
