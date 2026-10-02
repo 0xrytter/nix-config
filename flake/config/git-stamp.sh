@@ -1,14 +1,20 @@
 # git stamp [<commit> | <range>] [summary...]
 #
-# With no argument, stamps every commit not yet on any remote with one summary:
-# review the push as a whole, not commit by commit. A commit or an a..b range
-# narrows it. Prompts for the summary when none is given.
+# With no argument, stamps every commit not yet on any remote that has no stamp
+# yet, with one summary: review the push as a whole, and keep any per-commit
+# stamps already written. A commit or an a..b range (re)stamps exactly those.
+# Prompts for the summary when none is given.
 target="${1:-}"
 if [ $# -gt 0 ]; then shift; fi
 summary="$*"
 
 if [ -z "$target" ]; then
-  list=$(git rev-list --reverse HEAD --not --remotes)
+  unpushed=$(git rev-list --reverse HEAD --not --remotes)
+  list=""
+  for sha in $unpushed; do
+    git notes --ref=reviewed show "$sha" >/dev/null 2>&1 || list="$list$sha"$'\n'
+  done
+  list=${list%$'\n'}
 elif [[ $target == *..* ]]; then
   list=$(git rev-list --reverse "$target")
 else
