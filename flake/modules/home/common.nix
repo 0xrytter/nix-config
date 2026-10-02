@@ -431,6 +431,12 @@
   # there stays exactly one copy to edit.
   home.file.".claude/CLAUDE.md".source = ../../config/agent-rules.md;
 
+  # The agents' GitHub App installation, which `repothing agent` adds
+  # repositories to and takes them away from. Not a secret: it is in the URL of
+  # the installation's settings page. The credential is the vault's
+  # github-app-installations, fetched by repothing with sec.
+  home.sessionVariables.REPOTHING_AGENT_INSTALLATION = "167353400";
+
   home.packages = with pkgs; [
     repothing
     # `git stamp [<commit>] [<summary>]`: record that a human reviewed a commit,

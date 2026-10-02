@@ -341,11 +341,12 @@
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1790902541,
-        "narHash": "sha256-XcNmM81gMfu2JUMM8Nibp8Tv3A0pqDhvCmZItLMPpDY=",
+        "lastModified": 1790982136,
+        "narHash": "sha256-O60BOB4jMDEGonNk0NPZOGWjcZPTemMTjMy/BCP3j8o=",
         "path": "/home/rytter/src/repothing",
         "type": "path"
       },
@@ -363,7 +364,7 @@
         "repothing": "repothing",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
-        "treefmt-nix": "treefmt-nix_2"
+        "treefmt-nix": "treefmt-nix_3"
       }
     },
     "sops-nix": {
@@ -553,6 +554,27 @@
       }
     },
     "treefmt-nix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "repothing",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786901030,
+        "narHash": "sha256-WSFCsDSE5ffgD2MqzkM2CYjeFiKhRF/dJUN8uedb6YE=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "27b3b12a8e6375f28ebe122f07d230ca5459bbfa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "treefmt-nix_3": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
