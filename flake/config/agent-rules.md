@@ -136,7 +136,7 @@ Before writing any code, stop at the first rung that holds:
 
 1. Does this need to exist at all? (YAGNI)
 2. Does it already exist in this codebase? Reuse the helper, util, or pattern
-   already here — don't re-write it.
+   already here, if it's sound — don't re-write it.
 3. Does the standard library do it? Use it.
 4. Does a native platform feature cover it? Use it.
 5. Does an already-installed dependency solve it? Use it.
@@ -172,6 +172,17 @@ Rules:
 Never cut, in the name of laziness: understanding the problem fully, accessibility,
 the calibration real hardware needs (the platform is never the spec ideal — a clock
 drifts, a sensor reads off), or anything explicitly requested.
+
+### Existing code is evidence, not precedent
+
+Much of this code was prototyped fast. Don't assume what's here is correct or
+the elegant implementation, and don't copy a pattern just because it exists.
+When the task would build on, extend or copy a design that looks wrong, stop
+before writing on top of it and raise it: what's wrong, what it costs if we
+build on it, and the fix. The user decides whether to fix it first or proceed
+knowingly. Don't quietly work around it, and don't fix it without asking.
+Flaws you see in passing that the task doesn't touch get listed at the end,
+not acted on.
 
 ## Bug fixes — root cause, not symptom
 
