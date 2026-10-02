@@ -684,6 +684,27 @@
           review_picker() -- straight on to the next one
         end)
       end, { desc = '[G]it [S]tamp commit, then the next' })
+      -- Every repo with unpushed commits, from repothing. Picking one moves this
+      -- tab there (:tcd) and opens the commit picker, so a review round never
+      -- leaves nvim. repothing exits non-zero exactly when something needs
+      -- attention, so the JSON is what decides success, not the exit code.
+      vim.keymap.set('n', '<leader>gR', function()
+        local res = vim.system({ 'repothing', 'check', '--json' }, { text = true }):wait()
+        local ok, repos = pcall(vim.json.decode, res.stdout)
+        if not ok or type(repos) ~= 'table' then
+          return vim.notify('repothing check: ' .. (res.stderr ~= "" and res.stderr or 'no JSON'), vim.log.levels.ERROR)
+        end
+        local rows = vim.tbl_filter(function(r) return (r.ahead or 0) > 0 end, repos)
+        if #rows == 0 then return vim.notify('review: nothing unpushed in any repo') end
+        vim.ui.select(rows, {
+          prompt = 'Repos with unpushed commits',
+          format_item = function(r) return ('%-22s %d unpushed'):format(r.name, r.ahead) end,
+        }, function(r)
+          if not r then return end
+          vim.cmd.tcd(r.path)
+          review_picker()
+        end)
+      end, { desc = '[G]it [R]eview: pick a repo with unpushed work' })
 
       -- Ask DeepSeek about the visual selection, with follow-ups in the same
       -- float. A raw Messages call to Hyper with thinking disabled answers in

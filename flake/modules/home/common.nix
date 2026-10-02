@@ -3,6 +3,7 @@
   lib,
   pkgs,
   agents,
+  repothing,
   ...
 }:
 {
@@ -431,6 +432,7 @@
   home.file.".claude/CLAUDE.md".source = ../../config/agent-rules.md;
 
   home.packages = with pkgs; [
+    repothing
     # `git stamp [<commit>] [<summary>]`: record that a human reviewed a commit,
     # in their own words, as a note under refs/notes/reviewed. The pre-push hook
     # refuses commits without one. Prompts for the summary when none is given.

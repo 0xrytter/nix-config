@@ -26,6 +26,12 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Our own repo tool, on PATH (`repothing check`). path:, so the working tree
+    # is read as-is; `nix flake update repothing` picks up new commits.
+    repothing = {
+      url = "path:/home/rytter/src/repothing";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -38,10 +44,12 @@
       stylix,
       sops-nix,
       treefmt-nix,
+      repothing,
     }:
     let
       system = "x86_64-linux";
       agents = llm-agents.packages.${system};
+      repothing = self.inputs.repothing.packages.${system}.default;
       # crush is FSL-1.1-MIT (unfree) and claude-code is under Anthropic's
       # unfree terms; allow just those two, not all unfree packages.
       pkgs = import nixpkgs {
@@ -57,7 +65,7 @@
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "hm-bak";
-        home-manager.extraSpecialArgs = { inherit agents; };
+        home-manager.extraSpecialArgs = { inherit agents repothing; };
         home-manager.sharedModules = [
           nixvim.homeModules.nixvim
           sops-nix.homeManagerModules.sops
@@ -68,7 +76,7 @@
         username: homeDirectory: userModule:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
-          extraSpecialArgs = { inherit agents; };
+          extraSpecialArgs = { inherit agents repothing; };
           modules = [
             nixvim.homeModules.nixvim
             sops-nix.homeManagerModules.sops
@@ -93,7 +101,7 @@
       homeConfigurations = {
         wsl2 = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs;
-          extraSpecialArgs = { inherit agents; };
+          extraSpecialArgs = { inherit agents repothing; };
           modules = [
             nixvim.homeModules.nixvim
             sops-nix.homeManagerModules.sops
@@ -110,7 +118,7 @@
       nixosConfigurations = {
         DIY-Desktop = nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit agents; };
+          specialArgs = { inherit agents repothing; };
           modules = [
             ./hosts/DIY-Desktop/configuration.nix
             home-manager.nixosModules.home-manager
@@ -121,7 +129,7 @@
 
         T480 = nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit agents; };
+          specialArgs = { inherit agents repothing; };
           modules = [
             ./hosts/T480/configuration.nix
             home-manager.nixosModules.home-manager
@@ -132,7 +140,7 @@
 
         patrick-desktop = nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit agents; };
+          specialArgs = { inherit agents repothing; };
           modules = [
             ./hosts/patrick-desktop/configuration.nix
             home-manager.nixosModules.home-manager

@@ -337,12 +337,30 @@
         "type": "github"
       }
     },
+    "repothing": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790902541,
+        "narHash": "sha256-XcNmM81gMfu2JUMM8Nibp8Tv3A0pqDhvCmZItLMPpDY=",
+        "path": "/home/rytter/src/repothing",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/rytter/src/repothing",
+        "type": "path"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
+        "repothing": "repothing",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
         "treefmt-nix": "treefmt-nix_2"
