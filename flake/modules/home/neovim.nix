@@ -363,12 +363,12 @@
 
       diffview.enable = true;
 
-      # LeetCode in nvim, C# first. Note: it keeps its session cookie in
+      # LeetCode in nvim, in Python (the interview language; C# where a job requires it). Note: it keeps its session cookie in
       # plaintext under stdpath('cache')/leetcode.
       leetcode = {
         enable = true;
         settings = {
-          lang = "csharp";
+          lang = "python3";
           storage.home = "~/src/practice/leetcode";
         };
       };
