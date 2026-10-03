@@ -91,6 +91,17 @@ supervision replaces practice — so split the work by whose hands it needs:
   rotating it — do not keep working as if nothing happened.
 - When a value is already present in the environment (script, .env, session),
   reference it by name, never re-echo it.
+- **Generate what only machines use; ask only for the rest.** A secret is one
+  of three kinds. Issued by someone else (a vendor's API key) or one a human
+  must know or carry to a device: the human fills it, so scaffold a
+  `CHANGE_ME`. Random and used only by machines (session and JWT secrets,
+  encryption keys, internal passwords, a password together with its hash):
+  generate it straight into a **new** sops file, never asking. The value goes
+  from `openssl rand` into a shell variable and through pipes (`printf`, a
+  builtin, never argv) into `sops --encrypt --filename-override <path>`;
+  creating a file needs only the recipients' public keys, never the anchor, and
+  the value never surfaces. A secret that is harmless to lose on a rebuild
+  (sessions) can instead be generated on the box at first start.
 
 ### On this dev environment — no plaintext secrets at rest
 
@@ -119,7 +130,9 @@ tmpfs per session by `unlock`. Work with that, never around it:
   makes `unlock` decorative and puts the master key back on disk. Never create it.
 - **Never materialise a decrypted value**: no `sops -d` written to a file, no
   `| tee`, no redirect into the working tree, no new `~/.config/<tool>/secrets/`
-  dotfile, no value in argv where a process list can read it. `sec` and `secfile`
+  dotfile, no value in argv where a process list can read it — and
+  `$(cat /run/secrets/x)` inside a command is argv too; pass a file
+  (`--netrc-file`, `--password-file`) or a pipe. `sec` and `secfile`
   exist precisely so no consumer needs one.
 - **A new credential goes in the vault** (`sops secrets/personal.enc.yaml`), not
   in a plaintext file that outlives the session.
