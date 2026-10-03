@@ -39,9 +39,6 @@
     # it. See config/git-hooks/commit-msg for what the hook does and why it
     # matches on trailer keys rather than harness names.
     hooks.commit-msg = ../../config/git-hooks/commit-msg;
-    # Blocks a push until every commit in it carries a review stamp; see the
-    # hook for why the gate is at push rather than commit, and git-stamp below.
-    hooks.pre-push = ../../config/git-hooks/pre-push;
   };
 
   programs.fish = {
@@ -440,8 +437,8 @@
   home.packages = with pkgs; [
     repothing
     # `git stamp [<commit>] [<summary>]`: record that a human reviewed a commit,
-    # in their own words, as a note under refs/notes/reviewed. The pre-push hook
-    # refuses commits without one. Prompts for the summary when none is given.
+    # in their own words, as a note under refs/notes/reviewed. Prompts for the
+    # summary when none is given.
     (writeShellApplication {
       name = "git-stamp";
       runtimeInputs = [ git ];

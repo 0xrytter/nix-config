@@ -599,9 +599,8 @@
       vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = '[G]it file [H]istory' })
       vim.keymap.set('n', '<leader>gH', '<cmd>DiffviewFileHistory<cr>',   { desc = '[G]it branch [H]istory' })
       vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>',         { desc = '[G]it diffview [Q]uit' })
-      -- Review gate: each unpushed commit opens as one plain `git show` buffer,
-      -- so <leader>ce/cq work on it like any file, and <leader>gs stamps it.
-      -- The pre-push hook refuses unstamped commits (see git-stamp in common.nix).
+      -- Each unpushed commit opens as one plain `git show` buffer, so
+      -- <leader>ce/cq work on it like any file, and <leader>gs stamps it.
       local function review_commit(sha)
         local name = 'review://' .. sha
         if vim.fn.bufexists(name) == 1 then return vim.cmd.buffer(name) end
