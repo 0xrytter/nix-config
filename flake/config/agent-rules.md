@@ -222,12 +222,8 @@ revert and retry from a different angle instead of unpicking by hand.
 - **Commit messages are short.** A subject line saying what changed; if the
   why isn't obvious, at most two or three lines on it. No file lists, no
   restating the diff, no bullet summaries — the diff already says what moved.
-- **Review stamps are the user's alone.** A pre-push hook refuses any commit
-  without a review stamp (a git note under `refs/notes/reviewed`), and the stamp
-  is the user's one-line summary in their own words — it is how they keep their
-  hands on what ships. Never run `git stamp`, never write to
-  `refs/notes/reviewed`, never set `stamp.skip`, never push with `--no-verify`.
-  When work is done, say which commits are waiting for review.
+- **Review is the user's, not yours.** When work is done, say which commits are
+  waiting for review, so they can read the ones that matter before they ship.
 
 ## Tests — mandatory, as documentation, not ceremony
 

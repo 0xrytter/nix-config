@@ -13,9 +13,6 @@
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
-      # `git stamps`: the log with review stamps (git-stamp below). Not
-      # notes.displayRef, which warns on every log in a repo with no stamps yet.
-      alias.stamps = "log --notes=reviewed";
       "credential \"https://github.com\"".helper = [
         ""
         "!/run/current-system/sw/bin/gh auth git-credential"
@@ -436,14 +433,6 @@
 
   home.packages = with pkgs; [
     repothing
-    # `git stamp [<commit>] [<summary>]`: record that a human reviewed a commit,
-    # in their own words, as a note under refs/notes/reviewed. Prompts for the
-    # summary when none is given.
-    (writeShellApplication {
-      name = "git-stamp";
-      runtimeInputs = [ git ];
-      text = builtins.readFile ../../config/git-stamp.sh;
-    })
     fd
     ripgrep
     sesh
