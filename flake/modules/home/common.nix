@@ -420,10 +420,12 @@
   home.file.".claude/settings.json".source = ../../config/claude-settings.json;
   home.file.".claude/pricing.json".source = ../../config/claude-pricing.json;
   home.file.".claude/caps.json".source = ../../config/caps.json;
-  # The one rules file, loaded into every Claude Code session in every project on
-  # every host (user scope). Same source as the crush/opencode context paths, so
-  # there stays exactly one copy to edit.
-  home.file.".claude/CLAUDE.md".source = ../../config/agent-rules.md;
+  # The rules, loaded into every Claude Code session in every project (user
+  # scope): what holds everywhere, then what holds on this workstation. agent01
+  # gets the same shared file with its own section instead (iacthing).
+  home.file.".claude/CLAUDE.md".text =
+    builtins.readFile ../../config/agent-rules.md
+    + builtins.readFile ../../config/agent-rules-workstation.md;
 
   # The agents' GitHub App installation, which `repothing agent` adds
   # repositories to and takes them away from. Not a secret: it is in the URL of
