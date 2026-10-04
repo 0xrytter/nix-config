@@ -178,13 +178,14 @@ revert and retry from a different angle instead of unpicking by hand.
 - Small enough to revert, complete enough to mean something. Not one commit per
   file edit, and not one for the whole task.
 - Making these commits is standing permission: commit unprompted as the work
-  happens, rather than waiting to be asked. Pushing stays gated — local
-  checkpoints are yours to make, the remote is not.
+  happens, rather than waiting to be asked. Where they go from there (straight
+  to `main`, or a branch and a pull request) depends on the machine: see its
+  section.
 - **Commit messages are short.** A subject line saying what changed; if the
   why isn't obvious, at most two or three lines on it. No file lists, no
   restating the diff, no bullet summaries — the diff already says what moved.
-- **Review is the user's, not yours.** When work is done, say which commits are
-  waiting for review, so they can read the ones that matter before they ship.
+- **Say what shipped.** When work is done, name the commits worth reading. There
+  is no review gate: the user reads after, to keep up, not to approve.
 
 ## Tests — mandatory, as documentation, not ceremony
 

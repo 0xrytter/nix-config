@@ -3,6 +3,9 @@
 
 This machine: the user's own, with the vault, Docker and their GitHub login.
 
+- **Push to `main` directly** once the work is committed and checked. You run
+  supervised here, with the user's own GitHub login, whose admin bypass of the
+  rulesets is meant for this machine. Agents on agent01 never have it.
 - Repos are managed with `gh` (GitHub CLI). Create a new repo and push the
   existing history with `gh repo create <owner>/<name> --private --source . --push`
   from the project root (or `--public` if it is meant to be public).
