@@ -164,6 +164,14 @@ A bug report names a symptom. Grep every caller of the function you touch and
 fix the shared function once — one guard there is a smaller diff than one per
 caller. Patching only the path the ticket names leaves a sibling caller broken.
 
+## Open work — issues, not files
+
+Open work lives in the repo's GitHub issues, never in a TODO, PLAN or HANDOFF
+file. When you start in a repo, run `gh issue list` and read what bears on the
+task. Work you find but do not do this session (a follow-up, a flaw seen in
+passing, a question for the user) becomes `gh issue create`: a short title and
+what is needed. Close one with the commit that does it (`Fixes #n`).
+
 ## Commits — one per step, as a safety net
 
 Commit as the work progresses, not once at the end. A commit is a checkpoint:
