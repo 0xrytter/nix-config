@@ -31,9 +31,11 @@ let
   hyperClaudeSettings = pkgs.writeText "claude-hyper-settings.json" (
     builtins.toJSON {
       # Claude Code sizes these models as Claude ones and compacts near 200k;
-      # requests that big are slow on Hyper and stalled a long run at 165k.
-      # Compact against 120k instead (the setting's floor is 100k).
-      autoCompactWindow = 120000;
+      # requests that big are slow on Hyper, and one long run stalled at 165k.
+      # 120k left only ~80k of working room after Claude Code's own prompt and
+      # the rules, so workers compacted constantly: try 160k, and step down if
+      # stalls come back (the setting's floor is 100k).
+      autoCompactWindow = 160000;
       availableModels = [
         "deepseek-v4.1-flash"
         "kimi-k3"
