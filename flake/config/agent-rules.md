@@ -256,6 +256,10 @@ watcher that outlives it: mutual monitoring cannot cover a common-mode failure,
 so the watcher lives outside the thing it watches. Open: what a service owes in
 metrics, logs, and errors is still forming, so do not invent a standard here.
 
+- **Every served app answers `GET /health`:** 200 when it can do its job, 503 when
+  it cannot. The contract is in iacthing (`roles/app.nix`, the `health` option);
+  for anything it doesn't cover, ask the user.
+
 ## Database discipline — the schema is the foundation
 
 The database is not an arbitrary service behind an API. It is a first-class
