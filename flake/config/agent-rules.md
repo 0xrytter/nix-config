@@ -64,11 +64,11 @@ configuration of that machine.
   without Nix. The flake wraps that (toolchain, dev shell, `nix fmt`); it never
   replaces it. On the user's machine, entering the directory sets everything
   up: direnv loads the flake, and its shell hook runs the native install from
-  the lockfile — the same command the README gives everyone else. In repos the user doesn't own, add no Nix files at all — use
-  `nix shell` or a flake kept outside the repo.
-- Each of the user's own projects includes a `flake.nix` and uses direnv to
-  resolve the flake and provide the dev environment via `nix develop`. Prefer
-  that over local installs or global tools.
+  the lockfile — the same command the README gives everyone else.
+- Every repo the user works in gets a `flake.nix` and uses direnv to resolve
+  the flake and provide the dev environment via `nix develop`, whoever owns
+  the repo — unless the user says not to for that repo. Prefer that over local
+  installs or global tools.
 - Every flake declares a `formatter` output via treefmt-nix, enabling the
   formatter for each language the project uses. `nix fmt` is the one format
   command: run it before every commit, and add it to any flake that lacks it.
