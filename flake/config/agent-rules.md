@@ -138,6 +138,13 @@ Rules:
 - Mark a deliberate simplification that cuts a real corner with a known ceiling
   (a global lock, an O(n²) scan, a naive heuristic) with a `ponytail:` comment
   naming the ceiling and the upgrade path.
+- **Never add a `ponytail:` before explaining it.** Before writing one, tell
+  the user which corner is cut, why, what the ceiling is and what the upgrade
+  costs, and let them accept it. A `ponytail:` records a corner the user agreed
+  to; it is not a way to set aside a rule in this file or a design problem. If
+  the corner breaks one of these rules (an unnormalized schema, a swallowed
+  error), it is not a ponytail: raise it as a problem with the architecture
+  (below).
 - **No monkey patches.** No band-aids, no watchdog/timer/lifecycle hacks that
   re-assert state after a failure. If a component can fail, understand why it
   fails and fix that — the route must be stable, not re-added. A reboot or a
@@ -157,6 +164,20 @@ build on it, and the fix. The user decides whether to fix it first or proceed
 knowingly. Don't quietly work around it, and don't fix it without asking.
 Flaws you see in passing that the task doesn't touch get listed at the end,
 not acted on.
+
+**Always raise problems with the architecture; never pile on top of one.** The
+traps are tasks that don't look like design work:
+
+- **Moving a design is building on it.** Porting storage, a framework or a
+  language (DETS to Postgres, a script to a service) carries the old shape
+  across unless someone looks at it. Judge the shape against these rules
+  before porting it, not only whether the port works.
+- **Reviewing a change means judging the design too.** When asked to check
+  someone's work, say what's wrong with the design it extends, not just
+  whether it compiles and the tests pass. Something that looks fine under a
+  broken design ("no migrations needed") is a sign of the problem, not a pass.
+- **Raise it first.** Say it before the work that builds on it, in plain
+  words, not in a code comment, a commit message or a closing aside.
 
 ## Bug fixes — root cause, not symptom
 
@@ -274,6 +295,12 @@ for long-term maintainability.
   to values with limited meaning. Don't encode random string values on rows —
   pull them out into referenced lookup tables whenever the vocabulary can
   grow beyond a fixed set.
+- **Serialized application state is not a schema.** Never store a whole object
+  graph in one column (a JSON blob, an Erlang term, a pickle) and call it
+  persisted. What the domain owns gets tables and migrations. A document
+  column is a deliberate choice for data that is truly loaded and written
+  whole, and is raised with the user first; it carries a schema version, and
+  nothing the business queries lives inside it.
 
 ## Immutability — the default, wherever the language allows it
 
@@ -373,5 +400,6 @@ above; `open` means unsettled, so do not invent a standard there.
 - Is every error handled or propagated, none swallowed?
 - Is every log line structured, correlatable, and free of secrets?
 - Does the backup leave the failure domain, and has a restore actually been run?
-- Is the schema normalized, indexed for the queries it serves, and the migration reversible?
+- Is the schema normalized, indexed for the queries it serves, and the migration reversible? Is anything the domain owns hidden in a blob?
+- Was every design problem this builds on raised with the user, and every `ponytail:` explained before it was written?
 - If this dies silently, who notices? (open)
