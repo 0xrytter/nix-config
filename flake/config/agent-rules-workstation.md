@@ -13,6 +13,35 @@ This machine: the user's own, with the vault, Docker and their GitHub login.
   tests, throwaway databases, etc.); prefer disposable containers bound to
   `127.0.0.1` on a non-default port, and remove them after.
 
+### Leading DeepSeek through stubthing — when the user asks for it
+
+When the user asks for the stubthing flow, you are the lead and DeepSeek on
+agent01 does the volume. DeepSeek's cap is daily (unused capacity is lost);
+yours is weekly and scarce. So you spend tokens on judgement and DeepSeek on
+everything mechanical.
+
+- **The split.** Yours: the audit, the spec, a brief per task, the final verify
+  and the merge, and anything the user or a domain owner must decide. DeepSeek's:
+  the code, the tests, rework, doc drafts.
+- **The repo** needs a fork the agents' App can reach (`repothing lock` and
+  `repothing agent allow`) and a clone at `~/src/<repo>` on agent01. A task's
+  `repo` is that lowercase name.
+- **A task** is a stubthing `add_task` with `repo`, moved to `ready`. Its body
+  is the whole prompt, at most 500 characters, and the session has no MCP: the
+  detailed brief lives in the repo, and the body points at it and names the exact
+  commands and the stop ("ruff, commit, stop"). Brief the behaviour, not a
+  helper: a helper carries rules the brief did not mean.
+- **Release one task per dispatch pass** (30 s): two attempts on one repo in one
+  pass race on `git fetch` (llmthing #7). Release in batches each hour: the
+  provider's hourly limit ends sessions with a 429, sometimes with nothing done.
+  Re-file a cut-off task fresh; a rework continues on its old branch.
+- **Verify here, merge here.** agent01 has no copy of production data, so the
+  suite against the real dump runs on this machine. A branch that fails goes
+  back with a `REVIEW.txt` committed at its root (the failures and what to do)
+  and its task reopened (`in_review` → `open` → `ready`).
+- **The state lives outside you:** stubthing (tasks, a handoff note), the brief
+  in the repo, the fork's default branch. After a compaction, rebuild from them.
+
 ### No plaintext secrets at rest
 
 Agents here run on a machine that holds **no plaintext credential on disk**.
