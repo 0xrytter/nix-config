@@ -390,6 +390,32 @@ failure exist and both lose to the registry:
   dependencies get a quick cost check: what does it pull in, what does it
   solve, is the solve bigger than the import.
 
+## Failure modes — loud, immediate, recoverable
+
+Choose tools by how they fail, not by how they demo. A good failure is loud
+(it stops and says so), immediate (at the change that caused it) and
+recoverable (a rollback, a previous generation, a restore). A tool whose
+mistakes are silent, delayed or irreversible is a hazard however well it
+works on the happy path: "plug and play" usually means the failure mode was
+hidden, not removed.
+
+- **State lives where it is declared, never where a default put it.** A
+  container's own layer, an anonymous volume, a data directory keyed by a
+  random hostname, a `latest` tag: each works until the next redeploy moves
+  the default, and then the data is gone without an error. Declare the path,
+  the name and the version, and put it in the backup.
+- **Queues and jobs go in the Postgres already there:** Oban (Elixir), River
+  (Go). The job is written in the same transaction as the data it belongs
+  to, survives every deploy, and shares one backup and one restore test.
+  Redis is a cache, not a system of record; a separate broker (RabbitMQ,
+  Kafka) means a second store outside the transaction and an outbox to keep
+  them in step. Reach for one only when the volume or the number of services
+  demands it, and raise it first.
+- **A deploy is a restart, and that is a feature:** every deploy proves the
+  system recovers. Whatever cannot survive a restart is in the wrong place.
+- When choosing between two tools, prefer the one whose failure you would
+  see the same day. Name the silent failure mode of any tool you do adopt.
+
 ## Before you ship
 
 Run this against any component before calling it done. Each line has a home
@@ -400,6 +426,7 @@ above; `open` means unsettled, so do not invent a standard there.
 - Is every error handled or propagated, none swallowed?
 - Is every log line structured, correlatable, and free of secrets?
 - Does the backup leave the failure domain, and has a restore actually been run?
+- Does every tool here fail loudly, at once and recoverably — and is all state declared, not left where a default put it?
 - Is the schema normalized, indexed for the queries it serves, and the migration reversible? Is anything the domain owns hidden in a blob?
 - Was every design problem this builds on raised with the user, and every `ponytail:` explained before it was written?
 - If this dies silently, who notices? (open)
