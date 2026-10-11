@@ -33,12 +33,15 @@ everything mechanical.
   helper: a helper carries rules the brief did not mean.
 - **Release one task per dispatch pass** (30 s): two attempts on one repo in one
   pass race on `git fetch` (llmthing #7). Release in batches each hour: the
-  provider's hourly limit ends sessions with a 429, sometimes with nothing done.
+  provider's limit is a rolling hour and ends sessions with a 429, often with
+  nothing done.
   Re-file a cut-off task fresh; a rework continues on its old branch.
 - **Verify here, merge here.** agent01 has no copy of production data, so the
   suite against the real dump runs on this machine. A branch that fails goes
-  back with a `REVIEW.txt` committed at its root (the failures and what to do)
-  and its task reopened (`in_review` → `open` → `ready`).
+  back with a `REVIEW.txt` committed at its root on the fork (the failures and
+  what to do), and a new task says to merge `origin/<that branch>` first:
+  reopening the old task starts from agent01's local copy, which never sees the
+  review (llmthing #8).
 - **The state lives outside you:** stubthing (tasks, a handoff note), the brief
   in the repo, the fork's default branch. After a compaction, rebuild from them.
 
