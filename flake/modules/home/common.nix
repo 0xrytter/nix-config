@@ -433,6 +433,14 @@
   # github-app-installations, fetched by repothing with sec.
   home.sessionVariables.REPOTHING_AGENT_INSTALLATION = "167353400";
 
+  # Python's bytecode and ruff's cache live in ~/.cache, not a __pycache__/ in
+  # every package and a .ruff_cache/ at every project root. The prefix mirrors
+  # each file's full path and ruff keys its cache by project, so one folder
+  # serves every project. pytest's cache holds each project's last run by test
+  # name, so it stays per project (a project's flake can move it).
+  home.sessionVariables.PYTHONPYCACHEPREFIX = "${config.xdg.cacheHome}/python";
+  home.sessionVariables.RUFF_CACHE_DIR = "${config.xdg.cacheHome}/ruff";
+
   home.packages = with pkgs; [
     repothing
     fd
