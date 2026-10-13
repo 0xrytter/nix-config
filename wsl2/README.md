@@ -363,13 +363,12 @@ curl -s http://100.118.112.28:3000/api/health
 
 With it, tailscale owns `/etc/resolv.conf` - it rewrites that file when the daemon
 starts, which is what makes `agent01` resolve rather than only `100.76.233.93`.
-WSL regenerates the file on every distro start, so if a restart ever leaves names
-not resolving, `/etc/wsl.conf` settles the race:
-
-```ini
-[network]
-generateResolvConf = false
-```
+Left alone, WSL takes the file back on every distro start (it regenerates it and
+links `/etc/resolv.conf` to its own copy), and the names stop resolving while
+`tailscale ping agent01` still works. So `--accept-dns` also sets
+`generateResolvConf=false` in `/etc/wsl.conf` and replaces the link with a real
+file holding WSL's resolver, which is what tailscale falls back to when it stops.
+The `wsl.conf` part takes effect after `wsl --shutdown` from PowerShell.
 
 An address is stable while a node exists; a re-provisioned box joins again and gets
 a new one. The iacthing repository's `status.sh` prints the current address of
@@ -860,7 +859,7 @@ The complete setup is:
 11. Run ./wsl2/bootstrap.sh
 12. Put the age anchor on the clipboard and run `unlock` (section 7, "Agent credentials")
 13. Run ./wsl2/docker-setup.sh
-14. Run ./wsl2/tailscale-setup.sh (it joins the tailnet and prints the URL to authorise)
+14. Run ./wsl2/tailscale-setup.sh --accept-dns (it joins the tailnet and prints the URL to authorise), then `wsl --shutdown` from PowerShell
 15. Install JetBrainsMono Nerd Font on Windows
 16. Install WezTerm on Windows
 17. Copy .wezterm.lua to %USERPROFILE%

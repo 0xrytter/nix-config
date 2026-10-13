@@ -79,6 +79,22 @@ echo "    An unauthenticated machine prints a URL here - open it in Windows and"
 echo "    this waits for you."
 sudo "$CLI" up ${ACCEPT_DNS}
 
+# tailscale points /etc/resolv.conf at MagicDNS while it runs and puts the old file
+# back when it stops. WSL undoes that on every distro start: it regenerates the file
+# and makes /etc/resolv.conf a link to its own copy, so the fleet's names stop
+# resolving until the daemon restarts. Turn the generation off and make the file a
+# real one holding WSL's resolver, which is what tailscale falls back to.
+if [ -n "$ACCEPT_DNS" ]; then
+  echo "==> Keeping WSL from taking /etc/resolv.conf back"
+  sudo bash -c 'grep -q "^generateResolvConf" /etc/wsl.conf 2>/dev/null || printf "\n[network]\ngenerateResolvConf=false\n" >> /etc/wsl.conf'
+  if [ -L /etc/resolv.conf ]; then
+    BASE="$(grep -v '^#' /etc/resolv.conf)"
+    sudo rm /etc/resolv.conf
+    printf '%s\n' "$BASE" | sudo tee /etc/resolv.conf >/dev/null
+    sudo systemctl restart tailscaled
+  fi
+fi
+
 # After the join, so a machine that fails to authorise does not leave the CLI
 # looking like it works. This is what makes `tailscale status` run as $USER.
 echo "==> Handing the node to $USER, so the CLI needs no sudo from here on"
