@@ -77,7 +77,10 @@ fi
 echo "==> Joining the tailnet"
 echo "    An unauthenticated machine prints a URL here - open it in Windows and"
 echo "    this waits for you."
-sudo "$CLI" up ${ACCEPT_DNS}
+# --reset: on a re-run the node already carries the operator set below, and `up`
+# refuses to run without every non-default flag repeated. This script owns the
+# node's settings, so start from the defaults and set them again.
+sudo "$CLI" up --reset ${ACCEPT_DNS}
 
 # tailscale points /etc/resolv.conf at MagicDNS while it runs and puts the old file
 # back when it stops. WSL undoes that on every distro start: it regenerates the file
