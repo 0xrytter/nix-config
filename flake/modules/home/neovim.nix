@@ -370,6 +370,8 @@
         settings = {
           lang = "python3";
           storage.home = "~/src/practice/leetcode";
+          # Reopen a solved problem as it is on disk; `:Leet reset` gives a stub on demand.
+          editor.reset_previous_code = false;
         };
       };
 
