@@ -176,6 +176,14 @@ in
   # Nerd fonts + fontconfig so Windows Terminal / VS Code can pick them up.
   fonts.fontconfig.enable = true;
 
+  # The same weekly GC as T480's system one, as a systemd user timer: without
+  # it the store only grows (100 GB dead by October 2026).
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+
   # Ubuntu's nix install only puts the nix bin dirs on PATH for bash login
   # shells(/etc/profile.d/nix.sh). When fish is the shell (a WSL login or a herdr
   # pane) that never runs, so nix-installed tools like zoxide/nvim
