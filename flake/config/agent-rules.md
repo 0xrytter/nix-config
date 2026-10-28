@@ -301,6 +301,11 @@ for long-term maintainability.
   column is a deliberate choice for data that is truly loaded and written
   whole, and is raised with the user first; it carries a schema version, and
   nothing the business queries lives inside it.
+- **One action, one transaction.** Everything a user action writes commits
+  together or not at all, including bulk updates and sequences of statements.
+  Side effects (mail, files, queues outside the database) happen after the
+  commit they depend on. Concurrent requests are refused by the database (a
+  constraint, `ON CONFLICT`, a row lock), never by a check-then-write in code.
 
 ## Immutability — the default, wherever the language allows it
 
@@ -413,8 +418,19 @@ hidden, not removed.
   demands it, and raise it first.
 - **A deploy is a restart, and that is a feature:** every deploy proves the
   system recovers. Whatever cannot survive a restart is in the wrong place.
+- **Reading never writes.** A GET changes nothing; a thing that does not exist
+  yet is shown as an empty template until the action that saves it creates it.
+  A write on read is silent: it shows up later as data nobody entered.
 - When choosing between two tools, prefer the one whose failure you would
   see the same day. Name the silent failure mode of any tool you do adopt.
+
+## Caching — only what you can flush
+
+A cache you cannot flush is state you do not own. The server's caches are
+yours: a deploy or a command clears them. A browser's is not: once a file is in
+it, it stays there. So the client caches only what cannot go stale: static
+files named by their content's hash, kept long. Pages are never kept
+(`no-store`). Never leave caching to a default.
 
 ## Before you ship
 
@@ -428,5 +444,7 @@ above; `open` means unsettled, so do not invent a standard there.
 - Does the backup leave the failure domain, and has a restore actually been run?
 - Does every tool here fail loudly, at once and recoverably — and is all state declared, not left where a default put it?
 - Is the schema normalized, indexed for the queries it serves, and the migration reversible? Is anything the domain owns hidden in a blob?
+- Does each action commit as one transaction, side effects after it, and does the database refuse a concurrent duplicate?
+- Does a read change nothing, and does the client cache only what a new URL can replace?
 - Was every design problem this builds on raised with the user, and every `ponytail:` explained before it was written?
 - If this dies silently, who notices? (open)
